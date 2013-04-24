@@ -69,13 +69,14 @@ Display WordPress plugins that you currently have (both active and inactive) ont
 2. Go to `WP-Admin -> Pages -> Add New`
 3. Type any title you like in the page's title area
 4. Copy and paste the following in the page's content area:
-<code>
+```
 [stats_pluginsused]
-<h2>Active Plugins</h2>
+Active Plugins
 [active_pluginsused]
-<h2>Inactive Plugins</h2>
+Inactive Plugins
 [inactive_pluginsused]
-</code>
+```
+
 5. Click 'Publish'
 
 ## Upgrading
