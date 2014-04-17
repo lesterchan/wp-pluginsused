@@ -3,26 +3,18 @@ Contributors: GamerZ
 Donate link: http://lesterchan.net/site/donation/  
 Tags: use, used, plugin, plugins, plugin used, plugins used, plugins use  
 Requires at least: 2.8  
-Tested up to: 3.5  
+Tested up to: 3.9  
 Stable tag: trunk  
 
 Display WordPress plugins that you currently have (both active and inactive) onto a post/page.
 
 ## Description
 
-### Previous Versions
-* [WP-PluginsUsed 1.40 For WordPress 2.6.x And 2.7x](http://downloads.wordpress.org/plugin/wp-pluginsused.1.40.zip "WP-PluginsUsed 1.40 For WordPress 2.6.x And 2.7x")
-* [WP-PluginsUsed 1.31 For WordPress 2.5.x](http://downloads.wordpress.org/plugin/wp-pluginsused.1.31.zip "WP-PluginsUsed 1.31 For WordPress 2.5.x")
-* [WP-PluginsUsed 1.00 For WordPress 2.1.x, 2.2.x And 2.3.x](http://downloads.wordpress.org/plugin/wp-pluginsused.1.00.zip "WP-PluginsUsed 1.00 For WordPress 2.1.x, 2.2.x And 2.3.x")
-
 ### Development
-* [http://dev.wp-plugins.org/browser/wp-pluginsused/](http://dev.wp-plugins.org/browser/wp-pluginsused/ "http://dev.wp-plugins.org/browser/wp-pluginsused/")
+* [https://github.com/lesterchan/wp-pluginsused/](https://github.com/lesterchan/wp-pluginsused/ "https://github.com/lesterchan/wp-pluginsused/")
 
 ### Translations
 * [http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/](http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/ "http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/")
-
-### Support Forums
-* [http://forums.lesterchan.net/index.php?board=29.0](http://forums.lesterchan.net/index.php?board=29.0 "http://forums.lesterchan.net/index.php?board=29.0")
 
 ### Credits
 * Icons courtesy of [FamFamFam](http://www.famfamfam.com/ "FamFamFam")
