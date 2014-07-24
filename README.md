@@ -10,11 +10,14 @@ Display WordPress plugins that you currently have (both active and inactive) ont
 
 ## Description
 
+### Build Status
+[![Build Status](https://travis-ci.org/lesterchan/wp-pluginsused.svg?branch=master)](https://travis-ci.org/lesterchan/wp-pluginsused)
+
 ### Development
-* [https://github.com/lesterchan/wp-pluginsused/](https://github.com/lesterchan/wp-pluginsused/ "https://github.com/lesterchan/wp-pluginsused/")
+[https://github.com/lesterchan/wp-pluginsused/](https://github.com/lesterchan/wp-pluginsused/ "https://github.com/lesterchan/wp-pluginsused/")
 
 ### Translations
-* [http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/](http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/ "http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/")
+[http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/](http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/ "http://dev.wp-plugins.org/browser/wp-pluginsused/i18n/")
 
 ### Credits
 * Icons courtesy of [FamFamFam](http://www.famfamfam.com/ "FamFamFam")
