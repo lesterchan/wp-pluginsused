@@ -10,6 +10,20 @@ Display WordPress plugins that you currently have (both active and inactive) ont
 
 ## Description
 
+### General Usage
+1. To create a Plugins Used Page
+2. Go to `WP-Admin -> Pages -> Add New`
+3. Type any title you like in the page's title area
+4. Copy and paste the following in the page's content area:
+```
+[stats_pluginsused]
+Active Plugins
+[active_pluginsused]
+Inactive Plugins
+[inactive_pluginsused]
+```
+5. Click 'Publish'
+
 ### Build Status
 [![Build Status](https://travis-ci.org/lesterchan/wp-pluginsused.svg?branch=master)](https://travis-ci.org/lesterchan/wp-pluginsused)
 
@@ -51,38 +65,6 @@ Display WordPress plugins that you currently have (both active and inactive) ont
 
 ### Version 1.00 (01-10-2007)
 * NEW: Initial Release
-
-## Installation
-
-1. Open `wp-content/plugins` Folder
-2. Put: `Folder: wp-pluginsused`
-3. Activate `WP-PluginsUsed` Plugin
-
-### General Usage
-1. To create a Plugins Used Page
-2. Go to `WP-Admin -> Pages -> Add New`
-3. Type any title you like in the page's title area
-4. Copy and paste the following in the page's content area:
-```
-[stats_pluginsused]
-Active Plugins
-[active_pluginsused]
-Inactive Plugins
-[inactive_pluginsused]
-```
-
-5. Click 'Publish'
-
-## Upgrading
-
-1. Deactivate `WP-PluginsUsed` Plugin
-2. Open `wp-content/plugins` Folder
-3. Put/Overwrite: `Folder: wp-pluginsused`
-4. Activate `WP-PluginsUsed` Plugin
-
-## Upgrade Notice
-
-N/A
 
 ## Screenshots
 
