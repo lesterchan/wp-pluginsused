@@ -3,7 +3,7 @@
 Plugin Name: WP-PluginsUsed
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Display WordPress plugins that you currently have (both active and inactive) onto a post/page.
-Version: 1.50.1
+Version: 1.50.2
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-pluginsused
@@ -11,7 +11,7 @@ Text Domain: wp-pluginsused
 
 
 /*
-	Copyright 2017  Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2021  Lester Chan  (email : lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -122,11 +122,14 @@ function get_pluginsused() {
 		$wp_plugins[ plugin_basename( $plugin_file ) ] = $plugin_data;
 	}
 
-	uasort( $wp_plugins, create_function( '$a, $b', 'return strnatcasecmp($a["Plugin_Name"], $b["Plugin_Name"]);' ) );
+	uasort( $wp_plugins, 'pluginsused_sort' );
 
 	return $wp_plugins;
 }
 
+function pluginsused_sort($a, $b) {
+	return strnatcasecmp( $a['Plugin_Name'], $b['Plugin_Name'] );
+}
 
 ### Function: Process Plugins Used
 function process_pluginsused() {
