@@ -28,4 +28,37 @@
 	<rule ref="WordPress.WP.AlternativeFunctions">
 		<exclude-pattern>/tests/*</exclude-pattern>
 	</rule>
+
+	<!--
+		A test method's name is its documentation - test_hidden_plugins_are_
+		removed_from_listing_and_counts() gains nothing from a docblock repeating
+		it. Required everywhere else.
+	-->
+	<rule ref="Squiz.Commenting.FunctionComment.Missing">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Commenting.DocComment.MissingShort">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Commenting.DocComment.ShortNotCapital">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<!--
+		Test files are named test-*.php by WordPress convention rather than
+		class-*.php; the coding standard excepts test classes from that rule.
+	-->
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<!-- DOMDocument's own property names (nodeName, nodeValue) are not ours to rename. -->
+	<rule ref="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<!-- One test asserts on wp_options directly; there is no API for "which rows exist". -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
 </ruleset>

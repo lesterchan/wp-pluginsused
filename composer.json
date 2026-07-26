@@ -1,0 +1,26 @@
+{
+	"name": "lesterchan/wp-pluginsused",
+	"description": "Display WordPress plugins that you currently have (both active and inactive) onto a post/page.",
+	"type": "wordpress-plugin",
+	"homepage": "https://wordpress.org/plugins/wp-pluginsused/",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Lester Chan",
+			"email": "lesterchan@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.6",
+		"yoast/phpunit-polyfills": "^2.0"
+	},
+	"scripts": {
+		"test": "phpunit"
+	},
+	"config": {
+		"allow-plugins": false
+	}
+}
