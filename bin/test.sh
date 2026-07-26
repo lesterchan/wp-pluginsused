@@ -8,10 +8,15 @@
 #
 #   bash bin/test.sh                 # whole suite
 #   bash bin/test.sh --filter Escaping
+#   WP_MULTISITE=1 bash bin/test.sh  # as a network
 #
 # Override the stack with WP_ENV_PHP_VERSION / WP_ENV_CORE, exactly as CI does.
 
 set -euo pipefail
+
+# Read by the WordPress test bootstrap inside the container, so it has to be
+# forwarded into the container rather than merely exported out here.
+MULTISITE="${WP_MULTISITE:-0}"
 
 SLUG=wp-pluginsused
 CWD=wp-content/plugins/$SLUG
@@ -25,6 +30,6 @@ echo "==> Installing dev dependencies inside the tests container"
 npx --yes @wordpress/env run tests-cli --env-cwd="$CWD" \
 	composer install --no-interaction --no-progress
 
-echo "==> Running PHPUnit"
+echo "==> Running PHPUnit (multisite=$MULTISITE)"
 npx --yes @wordpress/env run tests-cli --env-cwd="$CWD" \
-	vendor/bin/phpunit "$@"
+	bash -c "WP_MULTISITE=$MULTISITE vendor/bin/phpunit $*"

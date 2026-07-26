@@ -37,7 +37,7 @@ jobs:
         run: $(composer global config bin-dir --absolute)/phpcs -q --report=checkstyle . | cs2pr
 
   phpunit:
-    name: PHPUnit (WP ${{ matrix.wordpress }}, PHP ${{ matrix.php }})
+    name: PHPUnit (WP ${{ matrix.wordpress }}, PHP ${{ matrix.php }}${{ matrix.multisite && ', multisite' || '' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -47,6 +47,12 @@ jobs:
             wordpress: '6.0'
           - php: '8.3'
             wordpress: 'latest'
+          # Multisite is not a spare wheel here: uninstall.php branches on
+          # is_multisite(), and network-activated plugins are read from a site
+          # option the single-site run never touches.
+          - php: '8.3'
+            wordpress: 'latest'
+            multisite: true
     steps:
       - uses: actions/checkout@v7
 
@@ -67,7 +73,9 @@ jobs:
           npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-pluginsused \
             composer install --no-interaction --no-progress
 
+      # WP_MULTISITE is read by the WordPress test bootstrap inside the
+      # container, so it has to be set there rather than on the npx process.
       - name: Run PHPUnit
         run: |
           npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-pluginsused \
-            vendor/bin/phpunit
+            bash -c 'WP_MULTISITE=${{ matrix.multisite && '1' || '0' }} vendor/bin/phpunit'
