@@ -50,7 +50,7 @@ require_once __DIR__ . '/includes/class-pluginsused-options.php';
 require_once __DIR__ . '/includes/class-pluginsused-template.php';
 require_once __DIR__ . '/includes/class-pluginsused-settings.php';
 require_once __DIR__ . '/includes/class-pluginsused.php';
-require_once __DIR__ . '/template-tags.php';
-require_once __DIR__ . '/deprecated.php';
+require_once __DIR__ . '/includes/template-tags.php';
+require_once __DIR__ . '/includes/deprecated.php';
 
 PluginsUsed::get_instance();

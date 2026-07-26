@@ -21,8 +21,8 @@ class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 	public function guarded_files() {
 		return array(
 			array( 'wp-pluginsused.php' ),
-			array( 'template-tags.php' ),
-			array( 'deprecated.php' ),
+			array( 'includes/template-tags.php' ),
+			array( 'includes/deprecated.php' ),
 			array( 'includes/class-pluginsused.php' ),
 			array( 'includes/class-pluginsused-options.php' ),
 			array( 'includes/class-pluginsused-settings.php' ),
@@ -43,6 +43,24 @@ class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 			"/defined\(\s*'ABSPATH'\s*\)\s*\|\|\s*exit;/",
 			php_strip_whitespace( $path ),
 			$file . ' must refuse to run when loaded directly.'
+		);
+	}
+
+	/**
+	 * Only the entry points belong in the plugin root.
+	 *
+	 * Everything else lives in includes/, matching the rest of the collection.
+	 * WordPress itself requires the main file and uninstall.php to sit at the
+	 * root, and index.php is the silence guard for the directory.
+	 */
+	public function test_only_entry_points_live_in_the_plugin_root() {
+		$root = array_map( 'basename', (array) glob( dirname( __DIR__ ) . '/*.php' ) );
+
+		sort( $root );
+
+		$this->assertSame(
+			array( 'index.php', 'uninstall.php', 'wp-pluginsused.php' ),
+			$root
 		);
 	}
 
