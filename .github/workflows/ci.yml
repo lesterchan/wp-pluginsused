@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
 
       # The runner already has Docker, which is all wp-env needs, so CI runs the
       # same stack as bin/test.sh does locally -- one code path, no drift.
