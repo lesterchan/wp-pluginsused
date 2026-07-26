@@ -29,86 +29,84 @@ Text Domain: wp-pluginsused
 */
 
 
-### Define: Show Plugin Version Number?
+// Define: Show Plugin Version Number?
 define( 'PLUGINSUSED_SHOW_VERSION', true );
 
 
-### Variable: Plugins To Hide?
+// Variable: Plugins To Hide?
 $pluginsused_hidden_plugins = array();
 
 
-### Create Text Domain For Translations
+// Create Text Domain For Translations
 add_action( 'init', 'pluginsused_textdomain' );
 function pluginsused_textdomain() {
 	load_plugin_textdomain( 'wp-pluginsused', false, 'wp-pluginsused' );
 }
 
 
-### Function: WordPress Get Plugin Data
+// Function: WordPress Get Plugin Data
 function get_pluginsused_data( $plugin_file ) {
-	$plugin_data = implode('', file( $plugin_file ) );
-	preg_match("|Plugin Name:(.*)|i", $plugin_data, $plugin_name);
-	preg_match("|Plugin URI:(.*)|i", $plugin_data, $plugin_uri);
-	preg_match("|Description:(.*)|i", $plugin_data, $description);
-	preg_match("|Author:(.*)|i", $plugin_data, $author_name);
-	preg_match("|Author URI:(.*)|i", $plugin_data, $author_uri);
-	if (preg_match("|Version:(.*)|i", $plugin_data, $version)) {
-		$version = trim($version[1]);
+	$plugin_data = implode( '', file( $plugin_file ) );
+	preg_match( '|Plugin Name:(.*)|i', $plugin_data, $plugin_name );
+	preg_match( '|Plugin URI:(.*)|i', $plugin_data, $plugin_uri );
+	preg_match( '|Description:(.*)|i', $plugin_data, $description );
+	preg_match( '|Author:(.*)|i', $plugin_data, $author_name );
+	preg_match( '|Author URI:(.*)|i', $plugin_data, $author_uri );
+	if ( preg_match( '|Version:(.*)|i', $plugin_data, $version ) ) {
+		$version = trim( $version[1] );
 	} else {
 		$version = '';
 	}
-	$plugin_name    = ! empty( $plugin_name[1] ) ? trim( $plugin_name[1] ) : '';
-	$plugin_uri     = ! empty( $plugin_uri[1] ) ? trim( $plugin_uri[1] ) : '';
-	$description    = ! empty( $description[1] ) ? wptexturize( trim( $description[1] ) )  : '';
-	$author         = ! empty( $author_name[1] ) ? trim( $author_name[1] ) : '';
-	$author_uri     = ! empty( $author_uri[1] ) ? trim( $author_uri[1] ) : '';
+	$plugin_name = ! empty( $plugin_name[1] ) ? trim( $plugin_name[1] ) : '';
+	$plugin_uri  = ! empty( $plugin_uri[1] ) ? trim( $plugin_uri[1] ) : '';
+	$description = ! empty( $description[1] ) ? wptexturize( trim( $description[1] ) ) : '';
+	$author      = ! empty( $author_name[1] ) ? trim( $author_name[1] ) : '';
+	$author_uri  = ! empty( $author_uri[1] ) ? trim( $author_uri[1] ) : '';
 
 	return array(
-		'Plugin_Name'   => $plugin_name,
-		'Plugin_URI'    => $plugin_uri,
-		'Description'   => $description,
-		'Author'        => $author,
-		'Author_URI'    => $author_uri,
-		'Version'       => $version
+		'Plugin_Name' => $plugin_name,
+		'Plugin_URI'  => $plugin_uri,
+		'Description' => $description,
+		'Author'      => $author,
+		'Author_URI'  => $author_uri,
+		'Version'     => $version,
 	);
 }
 
 
-### Function: WordPress Get Plugins
+// Function: WordPress Get Plugins
 function get_pluginsused() {
 	global $wp_plugins;
 	if ( isset( $wp_plugins ) ) {
 		return $wp_plugins;
 	}
-	$wp_plugins = array();
-	$plugin_root = WP_PLUGIN_DIR;
-	$plugins_dir = @dir( $plugin_root );
+	$wp_plugins   = array();
+	$plugin_root  = WP_PLUGIN_DIR;
+	$plugins_dir  = @dir( $plugin_root );
 	$plugin_files = array();
 	if ( $plugins_dir ) {
-		while( ( $file = $plugins_dir->read() ) !== false ) {
+		while ( ( $file = $plugins_dir->read() ) !== false ) {
 			if ( $file[0] === '.' ) {
 				continue;
 			}
 			if ( is_dir( $plugin_root . '/' . $file ) ) {
 				$plugins_subdir = @dir( $plugin_root . '/' . $file );
 				if ( $plugins_subdir ) {
-					while ( ( $subfile = $plugins_subdir->read()) !== false ) {
+					while ( ( $subfile = $plugins_subdir->read() ) !== false ) {
 						if ( $subfile[0] === '.' ) {
 							continue;
 						}
 						if ( substr( $subfile, -4 ) === '.php' ) {
-							$plugin_files[] = $file .'/'. $subfile;
+							$plugin_files[] = $file . '/' . $subfile;
 						}
 					}
 				}
-			} else {
-				if ( substr( $file, -4 ) === '.php' ) {
+			} elseif ( substr( $file, -4 ) === '.php' ) {
 					$plugin_files[] = $file;
-				}
 			}
 		}
 	}
-	if ( empty( $plugins_dir) || empty( $plugin_files ) ) {
+	if ( empty( $plugins_dir ) || empty( $plugin_files ) ) {
 		return $wp_plugins;
 	}
 	foreach ( $plugin_files as $plugin_file ) {
@@ -127,19 +125,29 @@ function get_pluginsused() {
 	return $wp_plugins;
 }
 
-function pluginsused_sort($a, $b) {
+function pluginsused_sort( $a, $b ) {
 	return strnatcasecmp( $a['Plugin_Name'], $b['Plugin_Name'] );
 }
 
-### Function: Process Plugins Used
+// Function: Process Plugins Used
 function process_pluginsused() {
 	global $plugins_used, $pluginsused_hidden_plugins;
 	if ( empty( $plugins_used ) ) {
-		$plugins_used = array();
-		$active_plugins = get_option( 'active_plugins' );
-		$plugins = get_pluginsused();
-		$plugins_allowedtags = array( 'a' => array( 'href' => array(),'title' => array() ),'abbr' => array( 'title' => array() ),'acronym' => array( 'title' => array() ),'code' => array(),'em' => array(),'strong' => array() );
-		foreach ($plugins as $plugin_file => $plugin_data ) {
+		$plugins_used        = array();
+		$active_plugins      = get_option( 'active_plugins' );
+		$plugins             = get_pluginsused();
+		$plugins_allowedtags = array(
+			'a'       => array(
+				'href'  => array(),
+				'title' => array(),
+			),
+			'abbr'    => array( 'title' => array() ),
+			'acronym' => array( 'title' => array() ),
+			'code'    => array(),
+			'em'      => array(),
+			'strong'  => array(),
+		);
+		foreach ( $plugins as $plugin_file => $plugin_data ) {
 			if ( ! in_array( $plugin_data['Plugin_Name'], $pluginsused_hidden_plugins, true ) ) {
 				$plugin_data['Plugin_Name'] = wp_kses( $plugin_data['Plugin_Name'], $plugins_allowedtags );
 				$plugin_data['Plugin_URI']  = wp_kses( $plugin_data['Plugin_URI'], $plugins_allowedtags );
@@ -162,8 +170,8 @@ function process_pluginsused() {
 }
 
 
-### Function: Display Plugins
-function display_pluginsused($type, $display = false) {
+// Function: Display Plugins
+function display_pluginsused( $type, $display = false ) {
 	global $plugins_used;
 	$temp = '';
 	if ( empty( $plugins_used ) ) {
@@ -172,22 +180,20 @@ function display_pluginsused($type, $display = false) {
 	if ( $type === 'stats' ) {
 		$total_active_pluginsused   = ! empty( $plugins_used['active'] ) ? count( $plugins_used['active'] ) : 0;
 		$total_inactive_pluginsused = ! empty( $plugins_used['inactive'] ) ? count( $plugins_used['inactive'] ) : 0;
-		$total_pluginsused = ( $total_active_pluginsused + $total_inactive_pluginsused );
-		$temp = sprintf( _n( 'There is <strong>%s</strong> plugin used:', 'There are <strong>%s</strong> plugins used:', $total_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_pluginsused ) ) .' ' . sprintf( _n( '<strong>%s active plugin</strong>','<strong>%s active plugins</strong>', $total_active_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_active_pluginsused ) ) . ' ' . __( 'and', 'wp-pluginsused' ) . ' ' . sprintf( _n( '<strong>%s inactive plugin</strong>.', '<strong>%s inactive plugins</strong>.', $total_inactive_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_inactive_pluginsused ) );
-	} else if ( $type === 'active' ) {
+		$total_pluginsused          = ( $total_active_pluginsused + $total_inactive_pluginsused );
+		$temp                       = sprintf( _n( 'There is <strong>%s</strong> plugin used:', 'There are <strong>%s</strong> plugins used:', $total_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_pluginsused ) ) . ' ' . sprintf( _n( '<strong>%s active plugin</strong>', '<strong>%s active plugins</strong>', $total_active_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_active_pluginsused ) ) . ' ' . __( 'and', 'wp-pluginsused' ) . ' ' . sprintf( _n( '<strong>%s inactive plugin</strong>.', '<strong>%s inactive plugins</strong>.', $total_inactive_pluginsused, 'wp-pluginsused' ), number_format_i18n( $total_inactive_pluginsused ) );
+	} elseif ( $type === 'active' ) {
 		if ( ! empty( $plugins_used['active'] ) ) {
-			foreach( (array) $plugins_used['active'] as $active_plugin ) {
+			foreach ( (array) $plugins_used['active'] as $active_plugin ) {
 				$temp .= pluginsused_format_display( $active_plugin );
 			}
 		}
-	} else {
-		if ( ! empty( $plugins_used['inactive'] ) ) {
-			foreach( (array) $plugins_used['inactive'] as $inactive_plugin ) {
-				$temp .= pluginsused_format_display( $inactive_plugin, 'inactive' );
-			}
+	} elseif ( ! empty( $plugins_used['inactive'] ) ) {
+		foreach ( (array) $plugins_used['inactive'] as $inactive_plugin ) {
+			$temp .= pluginsused_format_display( $inactive_plugin, 'inactive' );
 		}
 	}
-	if( $display ) {
+	if ( $display ) {
 		// $temp is assembled by pluginsused_format_display(), which escapes at every sink.
 		echo $temp; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	} else {
@@ -197,15 +203,15 @@ function display_pluginsused($type, $display = false) {
 
 
 function pluginsused_format_display( $plugin, $plugin_type = 'active' ) {
-	$plugin['Plugin_Name']    = strip_tags( $plugin['Plugin_Name'] );
-	$plugin['Plugin_URI']     = strip_tags( $plugin['Plugin_URI'] );
-	$plugin['Description']    = strip_tags( $plugin['Description'] );
-	$plugin['Version']        = strip_tags( $plugin['Version'] );
-	$plugin['Author']         = strip_tags( $plugin['Author'] );
-	$plugin['Author_URI']     = strip_tags( $plugin['Author_URI'] );
-	$plugin['Version']        = strip_tags( $plugin['Version'] );
-	$icon = plugins_url( 'wp-pluginsused/images/plugin_active.gif' );
-	if ( $plugin_type === 'inactive') {
+	$plugin['Plugin_Name'] = strip_tags( $plugin['Plugin_Name'] );
+	$plugin['Plugin_URI']  = strip_tags( $plugin['Plugin_URI'] );
+	$plugin['Description'] = strip_tags( $plugin['Description'] );
+	$plugin['Version']     = strip_tags( $plugin['Version'] );
+	$plugin['Author']      = strip_tags( $plugin['Author'] );
+	$plugin['Author_URI']  = strip_tags( $plugin['Author_URI'] );
+	$plugin['Version']     = strip_tags( $plugin['Version'] );
+	$icon                  = plugins_url( 'wp-pluginsused/images/plugin_active.gif' );
+	if ( $plugin_type === 'inactive' ) {
 		$icon = plugins_url( 'wp-pluginsused/images/plugin_inactive.gif' );
 	}
 
@@ -218,7 +224,7 @@ function pluginsused_format_display( $plugin, $plugin_type = 'active' ) {
 }
 
 
-### Function: Short Code For Inserting Plugins Used Into Page
+// Function: Short Code For Inserting Plugins Used Into Page
 add_shortcode( 'stats_pluginsused', 'pluginsused_stats_shortcode' );
 add_shortcode( 'active_pluginsused', 'pluginsused_active_shortcode' );
 add_shortcode( 'inactive_pluginsused', 'pluginsused_inactive_shortcode' );
