@@ -188,7 +188,8 @@ function display_pluginsused($type, $display = false) {
 		}
 	}
 	if( $display ) {
-		echo $temp;
+		// $temp is assembled by pluginsused_format_display(), which escapes at every sink.
+		echo $temp; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	} else {
 		return $temp;
 	}
@@ -208,7 +209,12 @@ function pluginsused_format_display( $plugin, $plugin_type = 'active' ) {
 		$icon = plugins_url( 'wp-pluginsused/images/plugin_inactive.gif' );
 	}
 
-	return '<p><img src="' . $icon . '" alt="' . $plugin['Plugin_Name'] . ' ' . $plugin['Version'] . '" title="' . $plugin['Plugin_Name'] . ' ' . $plugin['Version'] . '" style="vertical-align: middle;" />&nbsp;&nbsp;<strong><a href="' . $plugin['Plugin_URI'] . '" title="' . $plugin['Plugin_Name'] . ' ' . $plugin['Version'] . '">' . $plugin['Plugin_Name'] . ' ' . $plugin['Version'] . '</a></strong><br /><strong>&raquo; ' . $plugin['Author'] . ' (<a href="' . $plugin['Author_URI'] . '" title="' . $plugin['Author'] . '">' . __( 'url', 'wp-pluginsused' ) . '</a>)</strong><br />' . $plugin['Description'] . '</p>';
+	// Plugin headers are attacker-controlled for anyone who can drop a file in
+	// wp-content/plugins. strip_tags() above removes tags but leaves quotes, so
+	// escaping has to happen at each sink or a header breaks out of the attribute.
+	$label = trim( $plugin['Plugin_Name'] . ' ' . $plugin['Version'] );
+
+	return '<p><img src="' . esc_url( $icon ) . '" alt="' . esc_attr( $label ) . '" title="' . esc_attr( $label ) . '" style="vertical-align: middle;" />&nbsp;&nbsp;<strong><a href="' . esc_url( $plugin['Plugin_URI'] ) . '" title="' . esc_attr( $label ) . '">' . esc_html( $label ) . '</a></strong><br /><strong>&raquo; ' . esc_html( $plugin['Author'] ) . ' (<a href="' . esc_url( $plugin['Author_URI'] ) . '" title="' . esc_attr( $plugin['Author'] ) . '">' . esc_html__( 'url', 'wp-pluginsused' ) . '</a>)</strong><br />' . esc_html( $plugin['Description'] ) . '</p>';
 }
 
 
