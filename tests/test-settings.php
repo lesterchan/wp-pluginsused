@@ -145,6 +145,80 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 		$this->assertSame( array(), $stored['hidden_plugins'] );
 	}
 
+	/**
+	 * The checkbox values are plugin names, so a name containing quotes has to
+	 * survive the escape-on-render / unescape-on-submit trip unchanged, or it
+	 * will never match the name it is supposed to hide.
+	 */
+	public function test_a_hostile_plugin_name_round_trips_and_still_hides() {
+		$name = 'Evil" onmouseover="alert(1)';
+
+		update_option(
+			'pluginsused_options',
+			array(
+				'show_version'   => '1',
+				'hidden_plugins' => array( $name ),
+			)
+		);
+
+		$this->assertSame( array( $name ), get_option( 'pluginsused_options' )['hidden_plugins'] );
+
+		PluginsUsed_Template::reset_cache();
+		$markup = PluginsUsed_Template::render( 'active' ) . PluginsUsed_Template::render( 'inactive' );
+		$parsed = $this->parse_html( $markup );
+
+		$this->assertStringNotContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent );
+	}
+
+	public function test_an_unknown_setting_key_is_discarded_on_save() {
+		update_option(
+			'pluginsused_options',
+			array(
+				'show_version' => '1',
+				'evil_key'     => 'payload',
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'evil_key', get_option( 'pluginsused_options' ) );
+	}
+
+	public function test_the_section_lists_every_installed_plugin() {
+		$html = $this->render();
+
+		foreach ( array( 'Alpha Test Plugin', 'beta Test Plugin', 'Hidden Test Plugin' ) as $name ) {
+			$this->assertStringContainsString( 'value="' . esc_attr( $name ) . '"', $html );
+		}
+	}
+
+	public function test_a_ticked_plugin_renders_as_checked() {
+		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
+
+		$html = $this->render();
+
+		$this->assertMatchesRegularExpression(
+			'/value="Alpha Test Plugin"\s+checked/',
+			$html
+		);
+	}
+
+	public function test_the_screen_warns_when_the_legacy_constant_overrides_it() {
+		ob_start();
+		PluginsUsed_Settings::field_show_version();
+		$html = ob_get_clean();
+
+		if ( defined( 'PLUGINSUSED_SHOW_VERSION' ) ) {
+			$this->assertStringContainsString( 'PLUGINSUSED_SHOW_VERSION', $html );
+		} else {
+			$this->assertStringNotContainsString( 'PLUGINSUSED_SHOW_VERSION', $html );
+		}
+	}
+
+	public function test_settings_page_markup_is_well_formed() {
+		$parsed = $this->parse_html( $this->render() );
+
+		$this->assertSame( array(), $parsed['errors'] );
+	}
+
 	public function test_a_settings_link_is_added_to_the_plugins_row() {
 		$links = apply_filters(
 			'plugin_action_links_' . plugin_basename( WP_PLUGINSUSED_MAIN_FILE ),

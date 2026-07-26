@@ -80,6 +80,50 @@ class Test_PluginsUsed_Deprecated extends PluginsUsed_TestCase {
 		$this->assertStringContainsString( 'pluginsused-icon-active', $html );
 	}
 
+	/**
+	 * The legacy function memoised into $wp_plugins; callers may rely on the
+	 * second call being free.
+	 */
+	public function test_get_pluginsused_caches_in_the_legacy_global() {
+		$this->setExpectedDeprecated( 'get_pluginsused' );
+
+		$first = get_pluginsused();
+
+		$this->assertSame( $first, $GLOBALS['wp_plugins'] );
+		$this->assertSame( $first, get_pluginsused() );
+	}
+
+	public function test_process_pluginsused_matches_the_template_class() {
+		$this->setExpectedDeprecated( 'process_pluginsused' );
+
+		process_pluginsused();
+
+		$this->assertSame( PluginsUsed_Template::get_plugins_used(), $GLOBALS['plugins_used'] );
+	}
+
+	/**
+	 * The shims must not have become the implementation: the plugin's own
+	 * rendering path may never call a deprecated function, or every page load
+	 * would emit deprecation notices under WP_DEBUG.
+	 */
+	public function test_the_plugin_does_not_call_its_own_deprecated_functions() {
+		// Comment-free, or the docblock in the template class explaining that
+		// pluginsused_format_display() forwards to it counts as a call site.
+		$code = pluginsused_test_source_code( array( 'deprecated.php' ) );
+
+		foreach ( array( 'get_pluginsused_data(', 'process_pluginsused(', 'pluginsused_format_display(', 'pluginsused_sort(' ) as $call ) {
+			$this->assertStringNotContainsString( $call, $code );
+		}
+	}
+
+	public function test_rendering_emits_no_deprecation_notices() {
+		// No setExpectedDeprecated() here on purpose: if the render path did
+		// call a shim, the test suite would fail this test with an unexpected
+		// deprecation.
+		$this->assertNotEmpty( PluginsUsed_Template::render( 'active' ) );
+		$this->assertNotEmpty( do_shortcode( '[stats_pluginsused]' ) );
+	}
+
 	public function test_pluginsused_format_display_escapes_its_input() {
 		$this->setExpectedDeprecated( 'pluginsused_format_display' );
 

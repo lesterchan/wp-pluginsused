@@ -168,4 +168,137 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 
 		$this->assertStringContainsString( 'A plain description.', $parsed['doc']->textContent );
 	}
+
+	/**
+	 * Hiding is an exact match on the plugin name, not a substring search --
+	 * otherwise hiding "Alpha" would silently take "Alpha Test Plugin" with it.
+	 */
+	public function test_hiding_matches_the_whole_name_only() {
+		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha' ) ) );
+		PluginsUsed_Template::reset_cache();
+
+		$this->assertStringContainsString( 'Alpha Test Plugin', PluginsUsed_Template::render( 'active' ) );
+	}
+
+	/**
+	 * The name and version are joined with a space, so suppressing the version
+	 * must not leave the name with a trailing one.
+	 */
+	public function test_no_trailing_space_when_the_version_is_suppressed() {
+		update_option( 'pluginsused_options', array( 'show_version' => false ) );
+		PluginsUsed_Template::reset_cache();
+
+		$this->assertStringContainsString( '>Alpha Test Plugin</a>', PluginsUsed_Template::render( 'active' ) );
+	}
+
+	public function test_missing_author_uri_renders_no_url_link() {
+		$html = PluginsUsed_Template::format(
+			array(
+				'Plugin_Name' => 'No Author URI',
+				'Plugin_URI'  => 'https://example.com/x',
+				'Description' => 'x',
+				'Author'      => 'Someone',
+				'Author_URI'  => '',
+				'Version'     => '1.0',
+			)
+		);
+
+		$this->assertStringContainsString( 'Someone', $html );
+		$this->assertStringNotContainsString( '(<a', $html );
+		$this->assertStringNotContainsString( 'href=""', $html );
+	}
+
+	public function test_missing_plugin_uri_renders_the_name_as_plain_text() {
+		$html = PluginsUsed_Template::format(
+			array(
+				'Plugin_Name' => 'No Plugin URI',
+				'Plugin_URI'  => '',
+				'Description' => 'x',
+				'Author'      => 'Someone',
+				'Author_URI'  => '',
+				'Version'     => '1.0',
+			)
+		);
+
+		$this->assertStringContainsString( '<strong>No Plugin URI 1.0</strong>', $html );
+		$this->assertStringNotContainsString( 'href=""', $html );
+	}
+
+	/**
+	 * wptexturize() was applied to descriptions before 2.0.0 and core's
+	 * get_plugins() does not do it, so the plugin must keep doing it itself.
+	 */
+	public function test_description_is_texturized() {
+		$used = PluginsUsed_Template::get_plugins_used();
+
+		$evil = null;
+		foreach ( $used['active'] as $plugin ) {
+			if ( 0 === strpos( $plugin['Plugin_Name'], 'Evil' ) ) {
+				$evil = $plugin;
+			}
+		}
+
+		$this->assertNotNull( $evil );
+		$this->assertStringContainsString( '&#8220;quotes&#8221;', $evil['Description'] );
+	}
+
+	/**
+	 * All three shortcodes run on one page load, so the scan happens once.
+	 */
+	public function test_listing_is_cached_within_the_request() {
+		$first = PluginsUsed_Template::get_plugins_used();
+
+		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
+
+		$this->assertSame( $first, PluginsUsed_Template::get_plugins_used(), 'Cached within the request.' );
+
+		PluginsUsed_Template::reset_cache();
+
+		$this->assertNotSame( $first, PluginsUsed_Template::get_plugins_used(), 'reset_cache() re-reads.' );
+	}
+
+	public function test_icons_are_accessible_without_relying_on_colour() {
+		$active   = PluginsUsed_Template::render( 'active' );
+		$inactive = PluginsUsed_Template::render( 'inactive' );
+
+		// Announced to assistive tech...
+		$this->assertStringContainsString( 'role="img"', $active );
+		$this->assertStringContainsString( 'aria-label="Active plugin"', $active );
+		$this->assertStringContainsString( 'aria-label="Inactive plugin"', $inactive );
+
+		// ...and distinguished by shape, not just hue.
+		$this->assertStringContainsString( '<path', $active );
+		$this->assertStringContainsString( '<circle', $inactive );
+	}
+
+	public function test_icons_inherit_the_theme_colour() {
+		$this->assertStringContainsString( 'currentColor', PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'currentColor', PluginsUsed_Template::render( 'inactive' ) );
+	}
+
+	/**
+	 * The plugin ships no stylesheet, so nothing may depend on one.
+	 */
+	public function test_no_stylesheet_or_script_is_enqueued() {
+		do_action( 'wp_enqueue_scripts' );
+
+		$this->assertFalse( wp_style_is( 'wp-pluginsused', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'wp-pluginsused', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'jquery', 'enqueued' ) );
+	}
+
+	public function test_a_plugin_without_a_name_header_is_skipped() {
+		$dir = WP_PLUGIN_DIR . '/zzz-nameless';
+		mkdir( $dir, 0777, true );
+		file_put_contents( $dir . '/zzz-nameless.php', "<?php\n/*\nDescription: No name header.\nVersion: 1.0\n*/\n" );
+		$this->reset_plugin_state();
+
+		$used  = PluginsUsed_Template::get_plugins_used();
+		$names = wp_list_pluck( array_merge( $used['active'], $used['inactive'] ), 'Plugin_Name' );
+
+		unlink( $dir . '/zzz-nameless.php' );
+		rmdir( $dir );
+
+		$this->assertNotContains( '', $names );
+	}
 }

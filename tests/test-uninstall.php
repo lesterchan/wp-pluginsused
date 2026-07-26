@@ -96,4 +96,51 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 			$this->code()
 		);
 	}
+
+	/**
+	 * Actually run it. The suite is single-site, so this exercises the else
+	 * branch; the multisite loop above stays source-asserted because a
+	 * single-site suite cannot build a 101-site network.
+	 */
+	public function test_running_uninstall_removes_the_option() {
+		update_option( 'pluginsused_options', array( 'show_version' => false ) );
+		$this->assertNotFalse( get_option( 'pluginsused_options' ) );
+
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', 'wp-pluginsused/wp-pluginsused.php' );
+		}
+
+		include_once dirname( __DIR__ ) . '/uninstall.php';
+
+		$this->assertFalse( get_option( 'pluginsused_options' ) );
+	}
+
+	/**
+	 * Uninstall runs with the plugin inactive, so it may not reach for the
+	 * plugin's own classes or functions.
+	 */
+	public function test_it_does_not_depend_on_the_plugin_being_loaded() {
+		$code = $this->code();
+
+		foreach ( array( 'PluginsUsed_Options', 'PluginsUsed_Template', 'PluginsUsed_Settings', 'display_pluginsused' ) as $symbol ) {
+			$this->assertStringNotContainsString( $symbol, $code );
+		}
+	}
+
+	/**
+	 * Nothing else in wp_options belongs to this plugin, so uninstall naming a
+	 * single row is complete rather than an oversight.
+	 */
+	public function test_the_plugin_writes_no_other_option_rows() {
+		preg_match_all(
+			'/(?:update_option|add_option)\(\s*([\'"])([^\'"]+)\1/',
+			pluginsused_test_source_code(),
+			$matches
+		);
+
+		$this->assertSame(
+			array(),
+			array_diff( array_unique( $matches[2] ), array( 'pluginsused_options' ) )
+		);
+	}
 }

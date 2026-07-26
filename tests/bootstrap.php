@@ -36,4 +36,5 @@ require $_tests_dir . '/includes/bootstrap.php';
 
 // After the test library, not before: the base class extends WP_UnitTestCase,
 // which does not exist until the bootstrap above has run.
+require_once __DIR__ . '/helper-source.php';
 require_once __DIR__ . '/helper-fixtures.php';
