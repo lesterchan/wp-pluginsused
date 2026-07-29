@@ -228,20 +228,25 @@ class WP_PluginsUsed_Template {
 	 * request. State is conveyed by shape (filled versus outlined) as well as
 	 * by an aria-label, so it does not rely on colour alone.
 	 *
+	 * The class names are scoped under the plugin's slug so a theme can style
+	 * them without guessing, and the markup carries no style attribute: the
+	 * plugin paints no surface of its own, inherits colour through
+	 * currentColor, and ships no stylesheet for a theme to have to override.
+	 *
 	 * @param string $state 'active' or 'inactive'.
 	 * @return string
 	 */
 	protected static function icon( $state ) {
-		$common = ' width="14" height="14" viewBox="0 0 16 16" role="img" style="vertical-align: middle;"';
+		$common = ' width="14" height="14" viewBox="0 0 16 16" role="img"';
 
 		if ( 'active' === $state ) {
-			return '<svg class="pluginsused-icon pluginsused-icon-active"' . $common
+			return '<svg class="wp-pluginsused-icon wp-pluginsused-icon-active"' . $common
 				. ' aria-label="' . esc_attr__( 'Active plugin', 'wp-pluginsused' ) . '">'
 				. '<path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 10.2L3.6 7.7l1.3-1.3 2.2 2.2 4.1-4.1 1.3 1.3-5.4 5.4Z"/>'
 				. '</svg>';
 		}
 
-		return '<svg class="pluginsused-icon pluginsused-icon-inactive"' . $common
+		return '<svg class="wp-pluginsused-icon wp-pluginsused-icon-inactive"' . $common
 			. ' aria-label="' . esc_attr__( 'Inactive plugin', 'wp-pluginsused' ) . '">'
 			. '<circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55"/>'
 			. '</svg>';

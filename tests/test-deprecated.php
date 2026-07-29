@@ -77,7 +77,7 @@ class Test_PluginsUsed_Deprecated extends WP_PluginsUsed_TestCase {
 		);
 
 		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', $html );
-		$this->assertStringContainsString( 'pluginsused-icon-active', $html );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $html );
 	}
 
 	/**

@@ -141,9 +141,9 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 		$active   = WP_PluginsUsed_Template::render( 'active' );
 		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
-		$this->assertStringContainsString( 'pluginsused-icon-active', $active );
-		$this->assertStringContainsString( 'pluginsused-icon-inactive', $inactive );
-		$this->assertStringNotContainsString( 'pluginsused-icon-inactive', $active );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $active );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-inactive', $inactive );
+		$this->assertStringNotContainsString( 'wp-pluginsused-icon-inactive', $active );
 	}
 
 	/**
@@ -274,6 +274,30 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 	public function test_icons_inherit_the_theme_colour() {
 		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'active' ) );
 		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'inactive' ) );
+	}
+
+	/**
+	 * Class names are scoped under the plugin's slug, and the markup carries no
+	 * presentation of its own for a theme to have to fight.
+	 */
+	public function test_front_end_markup_is_scoped_and_free_of_inline_style() {
+		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
+
+		preg_match_all( '/class="([^"]*)"/', $markup, $classes );
+
+		$this->assertNotEmpty( $classes[1], 'The listing must carry at least one class.' );
+
+		foreach ( $classes[1] as $attribute ) {
+			foreach ( explode( ' ', $attribute ) as $class ) {
+				$this->assertStringStartsWith(
+					'wp-pluginsused',
+					$class,
+					"Every class the plugin emits is scoped under its slug; '{$class}' is not."
+				);
+			}
+		}
+
+		$this->assertStringNotContainsString( 'style=', $markup, 'The plugin ships no inline CSS.' );
 	}
 
 	/**
