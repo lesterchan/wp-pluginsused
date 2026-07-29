@@ -34,13 +34,36 @@ class WP_PluginsUsed_Settings {
 	const GROUP = 'wp_pluginsused_options';
 
 	/**
+	 * The capability a settings screen requires.
+	 *
+	 * WP-PluginsUsed has no data screens and so ships no capability of its own.
+	 *
+	 * @var string
+	 */
+	const CAPABILITY = 'manage_options';
+
+	/**
+	 * The display section, holding the version-number setting.
+	 *
+	 * @var string
+	 */
+	const SECTION_DISPLAY = 'wp_pluginsused_display';
+
+	/**
+	 * The hidden-plugins section.
+	 *
+	 * @var string
+	 */
+	const SECTION_HIDDEN = 'wp_pluginsused_hidden';
+
+	/**
 	 * Hook the screen up.
 	 *
 	 * @return void
 	 */
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_page' ) );
-		add_action( 'admin_init', array( __CLASS__, 'register' ) );
+		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 
 		// Activation hooks do not fire when a plugin is updated, so the upgrade
 		// routine is also run on every admin load.
@@ -50,6 +73,28 @@ class WP_PluginsUsed_Settings {
 			'plugin_action_links_' . plugin_basename( WP_PLUGINSUSED_MAIN_FILE ),
 			array( __CLASS__, 'action_links' )
 		);
+	}
+
+	/**
+	 * The capability required for a given context.
+	 *
+	 * Every capability check in the plugin goes through here, so a site that
+	 * hands this screen to somebody other than an administrator changes one
+	 * thing rather than hunting for current_user_can() calls.
+	 *
+	 * @param string $context What the capability is being checked for.
+	 * @return string
+	 */
+	public static function capability( $context = 'settings' ) {
+		/**
+		 * Filters the capability required to manage the plugin.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $capability The required capability.
+		 * @param string $context    What the capability is being checked for.
+		 */
+		return (string) apply_filters( 'wp_pluginsused_capability', self::CAPABILITY, $context );
 	}
 
 	/**
@@ -79,18 +124,18 @@ class WP_PluginsUsed_Settings {
 		add_options_page(
 			__( 'WP-PluginsUsed', 'wp-pluginsused' ),
 			__( 'WP-PluginsUsed', 'wp-pluginsused' ),
-			'manage_options',
+			self::capability(),
 			self::PAGE,
-			array( __CLASS__, 'render' )
+			array( __CLASS__, 'render_page' )
 		);
 	}
 
 	/**
-	 * Register the setting, section and fields.
+	 * Register the setting, its sections and its fields.
 	 *
 	 * @return void
 	 */
-	public static function register() {
+	public static function register_settings() {
 		register_setting(
 			self::GROUP,
 			WP_PluginsUsed_Options::OPTION,
@@ -102,33 +147,33 @@ class WP_PluginsUsed_Settings {
 		);
 
 		add_settings_section(
-			'pluginsused_display',
+			self::SECTION_DISPLAY,
 			__( 'Display', 'wp-pluginsused' ),
 			'__return_false',
 			self::PAGE
 		);
 
 		add_settings_field(
-			'pluginsused_show_version',
+			'wp_pluginsused_show_version',
 			__( 'Version numbers', 'wp-pluginsused' ),
 			array( __CLASS__, 'field_show_version' ),
 			self::PAGE,
-			'pluginsused_display'
+			self::SECTION_DISPLAY
 		);
 
 		add_settings_section(
-			'pluginsused_hidden',
+			self::SECTION_HIDDEN,
 			__( 'Hidden Plugins', 'wp-pluginsused' ),
 			array( __CLASS__, 'section_hidden' ),
 			self::PAGE
 		);
 
 		add_settings_field(
-			'pluginsused_hidden_plugins',
+			'wp_pluginsused_hidden_plugins',
 			__( 'Plugins to hide', 'wp-pluginsused' ),
 			array( __CLASS__, 'field_hidden_plugins' ),
 			self::PAGE,
-			'pluginsused_hidden'
+			self::SECTION_HIDDEN
 		);
 	}
 
@@ -197,9 +242,11 @@ class WP_PluginsUsed_Settings {
 			esc_html__( 'Plugins to hide', 'wp-pluginsused' )
 		);
 
+		// One per line, the way core's own checkbox lists do it. A style
+		// attribute here would be the only inline CSS in the plugin.
 		foreach ( $names as $plugin_name ) {
 			printf(
-				'<label style="display:block;margin-bottom:4px;"><input type="checkbox" name="%s" value="%s"%s /> %s</label>',
+				'<label><input type="checkbox" name="%s" value="%s"%s /> %s</label><br />',
 				esc_attr( $name ),
 				esc_attr( $plugin_name ),
 				checked( in_array( $plugin_name, $hidden, true ), true, false ),
@@ -224,8 +271,8 @@ class WP_PluginsUsed_Settings {
 	 *
 	 * @return void
 	 */
-	public static function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+	public static function render_page() {
+		if ( ! current_user_can( self::capability() ) ) {
 			return;
 		}
 

@@ -26,7 +26,7 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 		 */
 		WP_PluginsUsed_Settings::init();
 		WP_PluginsUsed_Settings::add_page();
-		WP_PluginsUsed_Settings::register();
+		WP_PluginsUsed_Settings::register_settings();
 	}
 
 	public function test_page_is_registered_under_settings() {
@@ -47,11 +47,58 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 		);
 	}
 
-	public function test_both_fields_are_registered() {
+	public function test_both_fields_are_registered_in_their_own_sections() {
 		global $wp_settings_fields;
 
-		$this->assertArrayHasKey( 'pluginsused_show_version', $wp_settings_fields['wp-pluginsused']['pluginsused_display'] );
-		$this->assertArrayHasKey( 'pluginsused_hidden_plugins', $wp_settings_fields['wp-pluginsused']['pluginsused_hidden'] );
+		$this->assertArrayHasKey(
+			'wp_pluginsused_show_version',
+			$wp_settings_fields['wp-pluginsused'][ WP_PluginsUsed_Settings::SECTION_DISPLAY ],
+			'The version-number checkbox belongs to the display section.'
+		);
+		$this->assertArrayHasKey(
+			'wp_pluginsused_hidden_plugins',
+			$wp_settings_fields['wp-pluginsused'][ WP_PluginsUsed_Settings::SECTION_HIDDEN ],
+			'The hidden-plugins list belongs to the hidden section.'
+		);
+	}
+
+	public function test_the_sections_are_named_after_the_plugin() {
+		$this->assertSame( 'wp_pluginsused_display', WP_PluginsUsed_Settings::SECTION_DISPLAY );
+		$this->assertSame( 'wp_pluginsused_hidden', WP_PluginsUsed_Settings::SECTION_HIDDEN );
+	}
+
+	/**
+	 * One filter decides who may reach the screen, so a site can hand it to
+	 * somebody other than an administrator in one place.
+	 */
+	public function test_the_capability_runs_through_the_filter() {
+		$this->assertSame( 'manage_options', WP_PluginsUsed_Settings::capability() );
+
+		$callback = static function () {
+			return 'edit_posts';
+		};
+
+		add_filter( 'wp_pluginsused_capability', $callback );
+		$capability = WP_PluginsUsed_Settings::capability();
+		remove_filter( 'wp_pluginsused_capability', $callback );
+
+		$this->assertSame( 'edit_posts', $capability, 'The filter must decide the capability.' );
+	}
+
+	public function test_the_screen_carries_no_inline_style_attribute() {
+		$this->assertStringNotContainsString(
+			'style=',
+			$this->render(),
+			'Core classes only: no admin markup in this collection carries inline CSS.'
+		);
+	}
+
+	public function test_the_form_table_comes_from_the_settings_api() {
+		$this->assertStringNotContainsString(
+			'<table',
+			wp_pluginsused_test_source_code(),
+			'do_settings_sections() emits the form table; no screen hand-writes one.'
+		);
 	}
 
 	/**
@@ -61,7 +108,7 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 	 */
 	protected function render() {
 		ob_start();
-		WP_PluginsUsed_Settings::render();
+		WP_PluginsUsed_Settings::render_page();
 
 		return ob_get_clean();
 	}
