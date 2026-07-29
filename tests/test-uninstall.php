@@ -88,13 +88,18 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The option row is the plugin's entire footprint, so uninstall must name it.
+	 * Two rows are the plugin's entire footprint, and the third is what a
+	 * development build of 2.0.0 may have left on an install that was removed
+	 * before it ever reached wp-admin.
 	 */
-	public function test_it_deletes_the_one_option_the_plugin_owns() {
-		$this->assertMatchesRegularExpression(
-			"/delete_option\(\s*'pluginsused_options'\s*\)/",
-			$this->code()
-		);
+	public function test_it_deletes_every_row_the_plugin_can_have_written() {
+		foreach ( array( 'wp_pluginsused_options', 'wp_pluginsused_version', 'pluginsused_options' ) as $row ) {
+			$this->assertMatchesRegularExpression(
+				"/delete_option\(\s*'" . $row . "'\s*\)/",
+				$this->code(),
+				"uninstall.php must delete the {$row} row."
+			);
+		}
 	}
 
 	/**
@@ -102,9 +107,10 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	 * branch; the multisite loop above stays source-asserted because a
 	 * single-site suite cannot build a 101-site network.
 	 */
-	public function test_running_uninstall_removes_the_option() {
+	public function test_running_uninstall_removes_every_row() {
+		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
+		update_option( 'wp_pluginsused_version', array( 'plugin' => '2.0.0' ) );
 		update_option( 'pluginsused_options', array( 'show_version' => false ) );
-		$this->assertNotFalse( get_option( 'pluginsused_options' ) );
 
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 			define( 'WP_UNINSTALL_PLUGIN', 'wp-pluginsused/wp-pluginsused.php' );
@@ -112,7 +118,9 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 
 		include_once dirname( __DIR__ ) . '/uninstall.php';
 
-		$this->assertFalse( get_option( 'pluginsused_options' ) );
+		$this->assertFalse( get_option( 'wp_pluginsused_options' ), 'The settings row must go.' );
+		$this->assertFalse( get_option( 'wp_pluginsused_version' ), 'The marker row must go with it.' );
+		$this->assertFalse( get_option( 'pluginsused_options' ), 'And so must the unprefixed leftover.' );
 	}
 
 	/**
@@ -128,8 +136,8 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Nothing else in wp_options belongs to this plugin, so uninstall naming a
-	 * single row is complete rather than an oversight.
+	 * Nothing else in wp_options belongs to this plugin, so uninstall naming
+	 * those rows is complete rather than an oversight.
 	 */
 	public function test_the_plugin_writes_no_other_option_rows() {
 		preg_match_all(
@@ -140,7 +148,8 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 
 		$this->assertSame(
 			array(),
-			array_diff( array_unique( $matches[2] ), array( 'pluginsused_options' ) )
+			array_diff( array_unique( $matches[2] ), array( 'wp_pluginsused_options', 'wp_pluginsused_version' ) ),
+			'A row written but not deleted on uninstall is exactly what this catches.'
 		);
 	}
 }

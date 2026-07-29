@@ -40,9 +40,22 @@ class WP_PluginsUsed {
 		add_shortcode( 'active_pluginsused', array( $this, 'shortcode_active' ) );
 		add_shortcode( 'inactive_pluginsused', array( $this, 'shortcode_inactive' ) );
 
+		// Must be registered while the plugin file is still being loaded, which
+		// is when this constructor runs.
+		register_activation_hook( WP_PLUGINSUSED_MAIN_FILE, array( __CLASS__, 'activate' ) );
+
 		if ( is_admin() ) {
 			WP_PluginsUsed_Settings::init();
 		}
+	}
+
+	/**
+	 * Activation: run the upgrade routine so the version row is stamped.
+	 *
+	 * @return void
+	 */
+	public static function activate() {
+		WP_PluginsUsed_Options::maybe_upgrade();
 	}
 
 	/**

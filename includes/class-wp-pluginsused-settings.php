@@ -26,9 +26,12 @@ class WP_PluginsUsed_Settings {
 	/**
 	 * Settings group passed to register_setting()/settings_fields().
 	 *
+	 * The group and the row it saves share one name, so there is one string to
+	 * get right rather than two that have to be kept in step.
+	 *
 	 * @var string
 	 */
-	const GROUP = 'pluginsused_options_group';
+	const GROUP = 'wp_pluginsused_options';
 
 	/**
 	 * Hook the screen up.
@@ -38,6 +41,11 @@ class WP_PluginsUsed_Settings {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_page' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register' ) );
+
+		// Activation hooks do not fire when a plugin is updated, so the upgrade
+		// routine is also run on every admin load.
+		add_action( 'admin_init', array( 'WP_PluginsUsed_Options', 'maybe_upgrade' ) );
+
 		add_filter(
 			'plugin_action_links_' . plugin_basename( WP_PLUGINSUSED_MAIN_FILE ),
 			array( __CLASS__, 'action_links' )

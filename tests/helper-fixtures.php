@@ -163,6 +163,8 @@ abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 		}
 
 		unset( $GLOBALS['pluginsused_hidden_plugins'] );
+		delete_option( 'wp_pluginsused_options' );
+		delete_option( 'wp_pluginsused_version' );
 		delete_option( 'pluginsused_options' );
 
 		$this->reset_plugin_state();

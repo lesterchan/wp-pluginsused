@@ -40,10 +40,10 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 	public function test_setting_is_registered_with_the_options_sanitizer() {
 		$registered = get_registered_settings();
 
-		$this->assertArrayHasKey( 'pluginsused_options', $registered );
+		$this->assertArrayHasKey( 'wp_pluginsused_options', $registered );
 		$this->assertSame(
 			array( 'WP_PluginsUsed_Options', 'sanitize' ),
-			$registered['pluginsused_options']['sanitize_callback']
+			$registered['wp_pluginsused_options']['sanitize_callback']
 		);
 	}
 
@@ -69,16 +69,16 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 	public function test_form_posts_to_options_php_with_a_nonce() {
 		$html = $this->render();
 
-		$this->assertStringContainsString( 'action="options.php"', $html );
-		$this->assertStringContainsString( 'pluginsused_options_group', $html );
-		$this->assertStringContainsString( '_wpnonce', $html );
+		$this->assertStringContainsString( 'action="options.php"', $html, 'The form must post to the Settings API endpoint.' );
+		$this->assertStringContainsString( 'value="wp_pluginsused_options"', $html, 'settings_fields() must name the registered group.' );
+		$this->assertStringContainsString( '_wpnonce', $html, 'settings_fields() must emit its nonce.' );
 	}
 
 	public function test_both_inputs_are_present() {
 		$html = $this->render();
 
-		$this->assertStringContainsString( 'name="pluginsused_options[show_version]"', $html );
-		$this->assertStringContainsString( 'name="pluginsused_options[hidden_plugins][]"', $html );
+		$this->assertStringContainsString( 'name="wp_pluginsused_options[show_version]"', $html );
+		$this->assertStringContainsString( 'name="wp_pluginsused_options[hidden_plugins][]"', $html );
 	}
 
 	public function test_hostile_plugin_name_is_escaped_in_the_checkbox_value() {
@@ -103,14 +103,14 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 	 */
 	public function test_save_round_trip_runs_the_sanitizer() {
 		update_option(
-			'pluginsused_options',
+			'wp_pluginsused_options',
 			array(
 				'show_version'   => '1',
 				'hidden_plugins' => array( 'beta Test Plugin', 'beta Test Plugin' ),
 			)
 		);
 
-		$stored = get_option( 'pluginsused_options' );
+		$stored = get_option( 'wp_pluginsused_options' );
 
 		$this->assertTrue( $stored['show_version'] );
 		$this->assertSame( array( 'beta Test Plugin' ), $stored['hidden_plugins'] );
@@ -118,7 +118,7 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 
 	public function test_saved_setting_takes_effect_in_the_listing() {
 		update_option(
-			'pluginsused_options',
+			'wp_pluginsused_options',
 			array(
 				'show_version'   => '1',
 				'hidden_plugins' => array( 'beta Test Plugin' ),
@@ -131,16 +131,16 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 
 	public function test_submitting_an_empty_form_clears_the_settings() {
 		update_option(
-			'pluginsused_options',
+			'wp_pluginsused_options',
 			array(
 				'show_version'   => '1',
 				'hidden_plugins' => array( 'beta Test Plugin' ),
 			)
 		);
 
-		update_option( 'pluginsused_options', array() );
+		update_option( 'wp_pluginsused_options', array() );
 
-		$stored = get_option( 'pluginsused_options' );
+		$stored = get_option( 'wp_pluginsused_options' );
 
 		$this->assertFalse( $stored['show_version'] );
 		$this->assertSame( array(), $stored['hidden_plugins'] );
@@ -155,14 +155,14 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 		$name = 'Evil" onmouseover="alert(1)';
 
 		update_option(
-			'pluginsused_options',
+			'wp_pluginsused_options',
 			array(
 				'show_version'   => '1',
 				'hidden_plugins' => array( $name ),
 			)
 		);
 
-		$this->assertSame( array( $name ), get_option( 'pluginsused_options' )['hidden_plugins'] );
+		$this->assertSame( array( $name ), get_option( 'wp_pluginsused_options' )['hidden_plugins'] );
 
 		WP_PluginsUsed_Template::reset_cache();
 		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
@@ -173,14 +173,14 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 
 	public function test_an_unknown_setting_key_is_discarded_on_save() {
 		update_option(
-			'pluginsused_options',
+			'wp_pluginsused_options',
 			array(
 				'show_version' => '1',
 				'evil_key'     => 'payload',
 			)
 		);
 
-		$this->assertArrayNotHasKey( 'evil_key', get_option( 'pluginsused_options' ) );
+		$this->assertArrayNotHasKey( 'evil_key', get_option( 'wp_pluginsused_options' ) );
 	}
 
 	public function test_the_section_lists_every_installed_plugin() {
@@ -192,7 +192,7 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_a_ticked_plugin_renders_as_checked() {
-		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
+		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
 
 		$html = $this->render();
 

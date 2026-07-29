@@ -79,7 +79,7 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_version_is_suppressed_when_disabled() {
-		update_option( 'pluginsused_options', array( 'show_version' => false ) );
+		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$active = WP_PluginsUsed_Template::render( 'active' );
@@ -92,7 +92,7 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 		$before = WP_PluginsUsed_Template::get_plugins_used();
 		$total  = count( $before['active'] ) + count( $before['inactive'] );
 
-		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Hidden Test Plugin' ) ) );
+		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Hidden Test Plugin' ) ) );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$after     = WP_PluginsUsed_Template::get_plugins_used();
@@ -174,7 +174,7 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 	 * otherwise hiding "Alpha" would silently take "Alpha Test Plugin" with it.
 	 */
 	public function test_hiding_matches_the_whole_name_only() {
-		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha' ) ) );
+		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha' ) ) );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ) );
@@ -185,7 +185,7 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 	 * must not leave the name with a trailing one.
 	 */
 	public function test_no_trailing_space_when_the_version_is_suppressed() {
-		update_option( 'pluginsused_options', array( 'show_version' => false ) );
+		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$this->assertStringContainsString( '>Alpha Test Plugin</a>', WP_PluginsUsed_Template::render( 'active' ) );
@@ -248,7 +248,7 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 	public function test_listing_is_cached_within_the_request() {
 		$first = WP_PluginsUsed_Template::get_plugins_used();
 
-		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
+		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
 
 		$this->assertSame( $first, WP_PluginsUsed_Template::get_plugins_used(), 'Cached within the request.' );
 
