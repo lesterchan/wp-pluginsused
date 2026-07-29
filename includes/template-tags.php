@@ -22,8 +22,7 @@ if ( ! function_exists( 'display_pluginsused' ) ) {
 		$out = WP_PluginsUsed_Template::render( $type );
 
 		if ( $display ) {
-			// Assembled by WP_PluginsUsed_Template, which escapes at every sink.
-			echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses( $out, WP_PluginsUsed_Template::allowed_html() );
 			return;
 		}
 

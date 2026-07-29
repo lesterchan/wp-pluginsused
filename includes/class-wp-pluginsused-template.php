@@ -157,23 +157,81 @@ class WP_PluginsUsed_Template {
 		$total    = $active + $inactive;
 
 		/*
-		 * Three separate sentences joined by a space, kept exactly as they were
-		 * before 2.0.0 so existing translations still match. The <strong> tags
-		 * are part of the source strings; the only substitution is a formatted
-		 * integer, so the result is safe to concatenate.
+		 * Three sentences joined by a space, rendering exactly the same string
+		 * as before 2.0.0. The <strong> tags moved out of the source strings
+		 * and into the concatenation: a translator has no reason to be handed
+		 * markup, and a msgid wrapped in a tag is a translation waiting to lose
+		 * it. The cost is that these three msgids changed, so their existing
+		 * translations fall back to English until they are redone -- recorded
+		 * as a NOTE in the changelog.
 		 */
-		return sprintf(
-			/* translators: %s: total number of plugins. */
-			_n( 'There is <strong>%s</strong> plugin used:', 'There are <strong>%s</strong> plugins used:', $total, 'wp-pluginsused' ),
-			number_format_i18n( $total )
-		) . ' ' . sprintf(
+		$total_text = sprintf(
+			/* translators: %s: total number of plugins, wrapped in <strong>. */
+			_n( 'There is %s plugin used:', 'There are %s plugins used:', $total, 'wp-pluginsused' ),
+			'<strong>' . number_format_i18n( $total ) . '</strong>'
+		);
+
+		$active_text = sprintf(
 			/* translators: %s: number of active plugins. */
-			_n( '<strong>%s active plugin</strong>', '<strong>%s active plugins</strong>', $active, 'wp-pluginsused' ), // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- Pre-2.0.0 msgid; rewording it would orphan every existing translation.
+			_n( '%s active plugin', '%s active plugins', $active, 'wp-pluginsused' ),
 			number_format_i18n( $active )
-		) . ' ' . __( 'and', 'wp-pluginsused' ) . ' ' . sprintf(
+		);
+
+		$inactive_text = sprintf(
 			/* translators: %s: number of inactive plugins. */
-			_n( '<strong>%s inactive plugin</strong>.', '<strong>%s inactive plugins</strong>.', $inactive, 'wp-pluginsused' ),
+			_n( '%s inactive plugin', '%s inactive plugins', $inactive, 'wp-pluginsused' ),
 			number_format_i18n( $inactive )
+		);
+
+		return $total_text
+			. ' <strong>' . $active_text . '</strong> '
+			. __( 'and', 'wp-pluginsused' )
+			. ' <strong>' . $inactive_text . '</strong>.';
+	}
+
+	/**
+	 * The markup the listings are allowed to contain.
+	 *
+	 * The template tag echoes, so it escapes at its sink like everything else.
+	 * Every value inside the listing has already been through esc_html(),
+	 * esc_attr() or esc_url(); this allow-list is about the structure around
+	 * them, and is written to match exactly what format() and render_stats()
+	 * emit -- tests/test-template.php asserts the two agree, so widening the
+	 * markup without widening this list fails the suite rather than silently
+	 * stripping half the listing.
+	 *
+	 * @return array Allowed tags in wp_kses() shape.
+	 */
+	public static function allowed_html() {
+		return array(
+			'p'      => array(),
+			'br'     => array(),
+			'strong' => array(),
+			'a'      => array(
+				'href'  => true,
+				'title' => true,
+			),
+			'svg'    => array(
+				'class'      => true,
+				'width'      => true,
+				'height'     => true,
+				'viewbox'    => true,
+				'role'       => true,
+				'aria-label' => true,
+			),
+			'path'   => array(
+				'fill' => true,
+				'd'    => true,
+			),
+			'circle' => array(
+				'cx'           => true,
+				'cy'           => true,
+				'r'            => true,
+				'fill'         => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+				'opacity'      => true,
+			),
 		);
 	}
 

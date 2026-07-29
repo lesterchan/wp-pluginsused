@@ -301,6 +301,38 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	/**
+	 * The allow-list display_pluginsused() escapes through must cover every tag
+	 * and attribute the listings actually emit. If it does not, the template tag
+	 * silently prints less than the shortcodes do, which is the kind of
+	 * difference nobody notices until a theme reports half a listing missing.
+	 */
+	public function test_the_kses_allow_list_matches_the_markup_exactly() {
+		$allowed = WP_PluginsUsed_Template::allowed_html();
+
+		foreach ( array( 'stats', 'active', 'inactive' ) as $type ) {
+			$markup = WP_PluginsUsed_Template::render( $type );
+
+			$this->assertSame(
+				$markup,
+				wp_kses( $markup, $allowed ),
+				"wp_kses() altered the {$type} listing, so allowed_html() no longer matches what render() emits."
+			);
+		}
+	}
+
+	public function test_the_template_tag_echoes_what_the_shortcode_returns() {
+		ob_start();
+		display_pluginsused( 'active', true );
+		$echoed = ob_get_clean();
+
+		$this->assertSame(
+			WP_PluginsUsed_Template::render( 'active' ),
+			$echoed,
+			'Echoing must not lose anything the returning form keeps.'
+		);
+	}
+
+	/**
 	 * The plugin ships no stylesheet, so nothing may depend on one.
 	 */
 	public function test_no_stylesheet_or_script_is_enqueued() {
