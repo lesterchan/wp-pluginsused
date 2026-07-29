@@ -4,8 +4,8 @@
  * Plugin URI: https://lesterchan.net/portfolio/programming/php/
  * Description: Display WordPress plugins that you currently have (both active and inactive) onto a post/page.
  * Version: 2.0.0
- * Requires at least: 6.0
- * Requires PHP: 7.4
+ * Requires at least: 6.8
+ * Requires PHP: 8.2
  * Author: Lester 'GaMerZ' Chan
  * Author URI: https://lesterchan.net
  * License: GPLv2 or later
@@ -17,7 +17,7 @@
  */
 
 /*
-	Copyright 2026 Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2026  Lester Chan  (email : lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -37,20 +37,40 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WP-PluginsUsed version.
+ * WP-PluginsUsed version. The last-run value is kept in the wp_pluginsused_version row.
  */
 define( 'WP_PLUGINSUSED_VERSION', '2.0.0' );
+
+/**
+ * Schema counter. Bumped only when the stored rows need reshaping.
+ */
+define( 'WP_PLUGINSUSED_DB_VERSION', '1' );
+
+/**
+ * WP-PluginsUsed slug, which is also the text domain.
+ */
+define( 'WP_PLUGINSUSED_SLUG', 'wp-pluginsused' );
 
 /**
  * WP-PluginsUsed main file.
  */
 define( 'WP_PLUGINSUSED_MAIN_FILE', __FILE__ );
 
-require_once __DIR__ . '/includes/class-pluginsused-options.php';
-require_once __DIR__ . '/includes/class-pluginsused-template.php';
-require_once __DIR__ . '/includes/class-pluginsused-settings.php';
-require_once __DIR__ . '/includes/class-pluginsused.php';
-require_once __DIR__ . '/includes/template-tags.php';
-require_once __DIR__ . '/includes/deprecated.php';
+/**
+ * WP-PluginsUsed directory, with a trailing slash.
+ */
+define( 'WP_PLUGINSUSED_DIR', plugin_dir_path( __FILE__ ) );
 
-PluginsUsed::get_instance();
+/**
+ * WP-PluginsUsed URL, with a trailing slash.
+ */
+define( 'WP_PLUGINSUSED_URL', plugin_dir_url( __FILE__ ) );
+
+require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-options.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-template.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-settings.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/template-tags.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/deprecated.php';
+
+WP_PluginsUsed::get_instance();

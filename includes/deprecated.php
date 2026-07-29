@@ -103,14 +103,14 @@ if ( ! function_exists( 'process_pluginsused' ) ) {
 	/**
 	 * Populate the $plugins_used global.
 	 *
-	 * @deprecated 2.0.0 Use PluginsUsed_Template::get_plugins_used().
+	 * @deprecated 2.0.0 Use WP_PluginsUsed_Template::get_plugins_used().
 	 *
 	 * @return void
 	 */
 	function process_pluginsused() {
-		_deprecated_function( __FUNCTION__, '2.0.0', 'PluginsUsed_Template::get_plugins_used()' );
+		_deprecated_function( __FUNCTION__, '2.0.0', 'WP_PluginsUsed_Template::get_plugins_used()' );
 
-		$GLOBALS['plugins_used'] = PluginsUsed_Template::get_plugins_used();
+		$GLOBALS['plugins_used'] = WP_PluginsUsed_Template::get_plugins_used();
 	}
 }
 
@@ -118,15 +118,15 @@ if ( ! function_exists( 'pluginsused_format_display' ) ) {
 	/**
 	 * Render a single plugin entry.
 	 *
-	 * @deprecated 2.0.0 Use PluginsUsed_Template::format().
+	 * @deprecated 2.0.0 Use WP_PluginsUsed_Template::format().
 	 *
 	 * @param array  $plugin      Plugin fields in the legacy shape.
 	 * @param string $plugin_type 'active' or 'inactive'.
 	 * @return string
 	 */
 	function pluginsused_format_display( $plugin, $plugin_type = 'active' ) {
-		_deprecated_function( __FUNCTION__, '2.0.0', 'PluginsUsed_Template::format()' );
+		_deprecated_function( __FUNCTION__, '2.0.0', 'WP_PluginsUsed_Template::format()' );
 
-		return PluginsUsed_Template::format( $plugin, $plugin_type );
+		return WP_PluginsUsed_Template::format( $plugin, $plugin_type );
 	}
 }

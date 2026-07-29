@@ -6,9 +6,9 @@
  */
 
 /**
- * @covers PluginsUsed_Template
+ * @covers WP_PluginsUsed_Template
  */
-class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Names present in one of the rendered listings.
@@ -23,8 +23,8 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_active_and_inactive_are_split_by_active_plugins() {
-		$active   = PluginsUsed_Template::render( 'active' );
-		$inactive = PluginsUsed_Template::render( 'inactive' );
+		$active   = WP_PluginsUsed_Template::render( 'active' );
+		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
 		$this->assertStringContainsString( 'Alpha Test Plugin', $active );
 		$this->assertStringNotContainsString( 'Alpha Test Plugin', $inactive );
@@ -40,16 +40,16 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	public function test_network_activated_plugins_count_as_active() {
 		update_option( 'active_plugins', array() );
 		update_site_option( 'active_sitewide_plugins', array( 'zzz-alpha/zzz-alpha.php' => time() ) );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( 'Alpha Test Plugin', PluginsUsed_Template::render( 'active' ) );
-		$this->assertStringNotContainsString( 'Alpha Test Plugin', PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringNotContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ) );
 
 		delete_site_option( 'active_sitewide_plugins' );
 	}
 
 	public function test_listing_is_sorted_case_insensitively() {
-		$inactive = PluginsUsed_Template::render( 'inactive' );
+		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
 		$beta   = strpos( $inactive, 'beta Test Plugin' );
 		$hidden = strpos( $inactive, 'Hidden Test Plugin' );
@@ -64,8 +64,8 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_stats_counts_match_the_listings() {
-		$stats    = PluginsUsed_Template::render( 'stats' );
-		$used     = PluginsUsed_Template::get_plugins_used();
+		$stats    = WP_PluginsUsed_Template::render( 'stats' );
+		$used     = WP_PluginsUsed_Template::get_plugins_used();
 		$active   = count( $used['active'] );
 		$inactive = count( $used['inactive'] );
 
@@ -75,35 +75,35 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_version_is_appended_by_default() {
-		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', WP_PluginsUsed_Template::render( 'active' ) );
 	}
 
 	public function test_version_is_suppressed_when_disabled() {
 		update_option( 'pluginsused_options', array( 'show_version' => false ) );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$active = PluginsUsed_Template::render( 'active' );
+		$active = WP_PluginsUsed_Template::render( 'active' );
 
 		$this->assertStringNotContainsString( '1.2.3', $active );
 		$this->assertStringContainsString( 'Alpha Test Plugin', $active, 'The name must survive.' );
 	}
 
 	public function test_hidden_plugins_are_removed_from_listing_and_counts() {
-		$before = PluginsUsed_Template::get_plugins_used();
+		$before = WP_PluginsUsed_Template::get_plugins_used();
 		$total  = count( $before['active'] ) + count( $before['inactive'] );
 
 		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Hidden Test Plugin' ) ) );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$after     = PluginsUsed_Template::get_plugins_used();
+		$after     = WP_PluginsUsed_Template::get_plugins_used();
 		$new_total = count( $after['active'] ) + count( $after['inactive'] );
-		$markup    = PluginsUsed_Template::render( 'active' ) . PluginsUsed_Template::render( 'inactive' );
+		$markup    = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 
 		$this->assertStringNotContainsString( 'Hidden Test Plugin', $markup );
 		$this->assertSame( $total - 1, $new_total, 'A hidden plugin must leave the counts too.' );
 		$this->assertStringContainsString(
 			'<strong>' . number_format_i18n( $new_total ) . '</strong>',
-			PluginsUsed_Template::render( 'stats' )
+			WP_PluginsUsed_Template::render( 'stats' )
 		);
 	}
 
@@ -114,32 +114,32 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 		};
 
 		add_filter( 'pluginsused_plugins_used', $callback );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertSame( '', PluginsUsed_Template::render( 'active' ) );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
 
 		remove_filter( 'pluginsused_plugins_used', $callback );
 	}
 
 	public function test_unknown_type_renders_the_inactive_listing() {
 		$this->assertSame(
-			PluginsUsed_Template::render( 'inactive' ),
-			PluginsUsed_Template::render( 'anything-else' )
+			WP_PluginsUsed_Template::render( 'inactive' ),
+			WP_PluginsUsed_Template::render( 'anything-else' )
 		);
 	}
 
 	public function test_entries_are_wrapped_one_paragraph_each() {
-		$used = PluginsUsed_Template::get_plugins_used();
+		$used = WP_PluginsUsed_Template::get_plugins_used();
 
 		$this->assertSame(
 			count( $used['active'] ),
-			substr_count( PluginsUsed_Template::render( 'active' ), '<p>' )
+			substr_count( WP_PluginsUsed_Template::render( 'active' ), '<p>' )
 		);
 	}
 
 	public function test_active_and_inactive_use_different_icons() {
-		$active   = PluginsUsed_Template::render( 'active' );
-		$inactive = PluginsUsed_Template::render( 'inactive' );
+		$active   = WP_PluginsUsed_Template::render( 'active' );
+		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
 		$this->assertStringContainsString( 'pluginsused-icon-active', $active );
 		$this->assertStringContainsString( 'pluginsused-icon-inactive', $inactive );
@@ -150,7 +150,7 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	 * The GIFs are gone; nothing may still reference them.
 	 */
 	public function test_no_image_requests_are_emitted() {
-		$markup = PluginsUsed_Template::render( 'active' ) . PluginsUsed_Template::render( 'inactive' );
+		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 
 		$this->assertStringNotContainsString( '<img', $markup );
 		$this->assertStringNotContainsString( '.gif', $markup );
@@ -158,13 +158,13 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 
 	public function test_empty_plugin_uri_does_not_emit_an_empty_anchor() {
 		// The evil fixture's javascript: URI is dropped by esc_url(), leaving nothing to link to.
-		$markup = PluginsUsed_Template::render( 'active' );
+		$markup = WP_PluginsUsed_Template::render( 'active' );
 
 		$this->assertStringNotContainsString( 'href=""', $markup );
 	}
 
 	public function test_description_text_survives_rendering() {
-		$parsed = $this->parse_html( PluginsUsed_Template::render( 'active' ) );
+		$parsed = $this->parse_html( WP_PluginsUsed_Template::render( 'active' ) );
 
 		$this->assertStringContainsString( 'A plain description.', $parsed['doc']->textContent );
 	}
@@ -175,9 +175,9 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	 */
 	public function test_hiding_matches_the_whole_name_only() {
 		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha' ) ) );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( 'Alpha Test Plugin', PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ) );
 	}
 
 	/**
@@ -186,13 +186,13 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	 */
 	public function test_no_trailing_space_when_the_version_is_suppressed() {
 		update_option( 'pluginsused_options', array( 'show_version' => false ) );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( '>Alpha Test Plugin</a>', PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( '>Alpha Test Plugin</a>', WP_PluginsUsed_Template::render( 'active' ) );
 	}
 
 	public function test_missing_author_uri_renders_no_url_link() {
-		$html = PluginsUsed_Template::format(
+		$html = WP_PluginsUsed_Template::format(
 			array(
 				'Plugin_Name' => 'No Author URI',
 				'Plugin_URI'  => 'https://example.com/x',
@@ -209,7 +209,7 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_missing_plugin_uri_renders_the_name_as_plain_text() {
-		$html = PluginsUsed_Template::format(
+		$html = WP_PluginsUsed_Template::format(
 			array(
 				'Plugin_Name' => 'No Plugin URI',
 				'Plugin_URI'  => '',
@@ -229,7 +229,7 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	 * get_plugins() does not do it, so the plugin must keep doing it itself.
 	 */
 	public function test_description_is_texturized() {
-		$used = PluginsUsed_Template::get_plugins_used();
+		$used = WP_PluginsUsed_Template::get_plugins_used();
 
 		$evil = null;
 		foreach ( $used['active'] as $plugin ) {
@@ -246,20 +246,20 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	 * All three shortcodes run on one page load, so the scan happens once.
 	 */
 	public function test_listing_is_cached_within_the_request() {
-		$first = PluginsUsed_Template::get_plugins_used();
+		$first = WP_PluginsUsed_Template::get_plugins_used();
 
 		update_option( 'pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
 
-		$this->assertSame( $first, PluginsUsed_Template::get_plugins_used(), 'Cached within the request.' );
+		$this->assertSame( $first, WP_PluginsUsed_Template::get_plugins_used(), 'Cached within the request.' );
 
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertNotSame( $first, PluginsUsed_Template::get_plugins_used(), 'reset_cache() re-reads.' );
+		$this->assertNotSame( $first, WP_PluginsUsed_Template::get_plugins_used(), 'reset_cache() re-reads.' );
 	}
 
 	public function test_icons_are_accessible_without_relying_on_colour() {
-		$active   = PluginsUsed_Template::render( 'active' );
-		$inactive = PluginsUsed_Template::render( 'inactive' );
+		$active   = WP_PluginsUsed_Template::render( 'active' );
+		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
 		// Announced to assistive tech...
 		$this->assertStringContainsString( 'role="img"', $active );
@@ -272,8 +272,8 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_icons_inherit_the_theme_colour() {
-		$this->assertStringContainsString( 'currentColor', PluginsUsed_Template::render( 'active' ) );
-		$this->assertStringContainsString( 'currentColor', PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'inactive' ) );
 	}
 
 	/**
@@ -297,7 +297,7 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 		);
 		$this->reset_plugin_state();
 
-		$used  = PluginsUsed_Template::get_plugins_used();
+		$used  = WP_PluginsUsed_Template::get_plugins_used();
 		$names = wp_list_pluck( array_merge( $used['active'], $used['inactive'] ), 'Plugin_Name' );
 
 		$this->delete_plugin_fixture( 'zzz-nameless' );

@@ -122,7 +122,7 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	public function test_it_does_not_depend_on_the_plugin_being_loaded() {
 		$code = $this->code();
 
-		foreach ( array( 'PluginsUsed_Options', 'PluginsUsed_Template', 'PluginsUsed_Settings', 'display_pluginsused' ) as $symbol ) {
+		foreach ( array( 'WP_PluginsUsed_Options', 'WP_PluginsUsed_Template', 'WP_PluginsUsed_Settings', 'display_pluginsused' ) as $symbol ) {
 			$this->assertStringNotContainsString( $symbol, $code );
 		}
 	}
@@ -134,7 +134,7 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	public function test_the_plugin_writes_no_other_option_rows() {
 		preg_match_all(
 			'/(?:update_option|add_option)\(\s*([\'"])([^\'"]+)\1/',
-			pluginsused_test_source_code(),
+			wp_pluginsused_test_source_code(),
 			$matches
 		);
 

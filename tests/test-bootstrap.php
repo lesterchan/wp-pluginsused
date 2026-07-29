@@ -6,7 +6,7 @@
  */
 
 /**
- * @covers PluginsUsed
+ * @covers WP_PluginsUsed
  */
 class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 
@@ -23,10 +23,10 @@ class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 			array( 'wp-pluginsused.php' ),
 			array( 'includes/template-tags.php' ),
 			array( 'includes/deprecated.php' ),
-			array( 'includes/class-pluginsused.php' ),
-			array( 'includes/class-pluginsused-options.php' ),
-			array( 'includes/class-pluginsused-settings.php' ),
-			array( 'includes/class-pluginsused-template.php' ),
+			array( 'includes/class-wp-pluginsused.php' ),
+			array( 'includes/class-wp-pluginsused-options.php' ),
+			array( 'includes/class-wp-pluginsused-settings.php' ),
+			array( 'includes/class-wp-pluginsused-template.php' ),
 		);
 	}
 
@@ -94,22 +94,30 @@ class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 	}
 
 	public function test_every_class_is_loaded() {
-		$this->assertTrue( class_exists( 'PluginsUsed' ) );
-		$this->assertTrue( class_exists( 'PluginsUsed_Options' ) );
-		$this->assertTrue( class_exists( 'PluginsUsed_Settings' ) );
-		$this->assertTrue( class_exists( 'PluginsUsed_Template' ) );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed' ) );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Options' ) );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Settings' ) );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Template' ) );
 	}
 
 	public function test_get_instance_is_a_singleton() {
-		$this->assertSame( PluginsUsed::get_instance(), PluginsUsed::get_instance() );
+		$this->assertSame( WP_PluginsUsed::get_instance(), WP_PluginsUsed::get_instance() );
 	}
 
 	/**
-	 * The plugin must not prefix with WP_, which core reserves.
+	 * Every class carries the display name as its prefix, and its file is that
+	 * name lowercased with the underscores turned into hyphens.
 	 */
-	public function test_classes_are_not_prefixed_with_wp() {
-		foreach ( array( 'PluginsUsed', 'PluginsUsed_Options', 'PluginsUsed_Settings', 'PluginsUsed_Template' ) as $class ) {
-			$this->assertStringStartsNotWith( 'WP_', $class );
+	public function test_every_class_is_named_after_the_plugin_and_lives_in_a_matching_file() {
+		foreach ( array( 'WP_PluginsUsed', 'WP_PluginsUsed_Options', 'WP_PluginsUsed_Settings', 'WP_PluginsUsed_Template' ) as $class ) {
+			$this->assertStringStartsWith( 'WP_PluginsUsed', $class, 'Nothing unprefixed may reach the global namespace.' );
+
+			$file = 'class-' . str_replace( '_', '-', strtolower( $class ) ) . '.php';
+
+			$this->assertFileExists(
+				dirname( __DIR__ ) . '/includes/' . $file,
+				"{$class} must be declared in includes/{$file}."
+			);
 		}
 	}
 
@@ -130,13 +138,13 @@ class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
 	public function test_no_textdomain_is_loaded_manually() {
 		$this->assertStringNotContainsString(
 			'load_plugin_textdomain',
-			pluginsused_test_source_code()
+			wp_pluginsused_test_source_code()
 		);
 	}
 
 	public function test_settings_screen_is_not_wired_up_on_the_front_end() {
 		// is_admin() is false in the test suite, so the constructor must not
 		// have registered the admin hooks.
-		$this->assertFalse( has_action( 'admin_menu', array( 'PluginsUsed_Settings', 'add_page' ) ) );
+		$this->assertFalse( has_action( 'admin_menu', array( 'WP_PluginsUsed_Settings', 'add_page' ) ) );
 	}
 }

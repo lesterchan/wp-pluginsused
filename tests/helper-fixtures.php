@@ -11,7 +11,7 @@
 /**
  * Base class handling fixture plugin creation and teardown.
  */
-abstract class PluginsUsed_TestCase extends WP_UnitTestCase {
+abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 
 	/**
 	 * Fixture definitions: slug => header values.
@@ -177,7 +177,7 @@ abstract class PluginsUsed_TestCase extends WP_UnitTestCase {
 	 */
 	protected function reset_plugin_state() {
 		wp_cache_delete( 'plugins', 'plugins' );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 	}
 
 	/**

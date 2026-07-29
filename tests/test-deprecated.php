@@ -11,7 +11,7 @@
 /**
  * @coversNothing
  */
-class Test_PluginsUsed_Deprecated extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Deprecated extends WP_PluginsUsed_TestCase {
 
 	public function tear_down() {
 		unset( $GLOBALS['wp_plugins'], $GLOBALS['plugins_used'] );
@@ -98,7 +98,7 @@ class Test_PluginsUsed_Deprecated extends PluginsUsed_TestCase {
 
 		process_pluginsused();
 
-		$this->assertSame( PluginsUsed_Template::get_plugins_used(), $GLOBALS['plugins_used'] );
+		$this->assertSame( WP_PluginsUsed_Template::get_plugins_used(), $GLOBALS['plugins_used'] );
 	}
 
 	/**
@@ -109,7 +109,7 @@ class Test_PluginsUsed_Deprecated extends PluginsUsed_TestCase {
 	public function test_the_plugin_does_not_call_its_own_deprecated_functions() {
 		// Comment-free, or the docblock in the template class explaining that
 		// pluginsused_format_display() forwards to it counts as a call site.
-		$code = pluginsused_test_source_code( array( 'deprecated.php' ) );
+		$code = wp_pluginsused_test_source_code( array( 'deprecated.php' ) );
 
 		foreach ( array( 'get_pluginsused_data(', 'process_pluginsused(', 'pluginsused_format_display(', 'pluginsused_sort(' ) as $call ) {
 			$this->assertStringNotContainsString( $call, $code );
@@ -120,7 +120,7 @@ class Test_PluginsUsed_Deprecated extends PluginsUsed_TestCase {
 		// No setExpectedDeprecated() here on purpose: if the render path did
 		// call a shim, the test suite would fail this test with an unexpected
 		// deprecation.
-		$this->assertNotEmpty( PluginsUsed_Template::render( 'active' ) );
+		$this->assertNotEmpty( WP_PluginsUsed_Template::render( 'active' ) );
 		$this->assertNotEmpty( do_shortcode( '[stats_pluginsused]' ) );
 	}
 

@@ -6,9 +6,9 @@
  */
 
 /**
- * @covers PluginsUsed_Settings
+ * @covers WP_PluginsUsed_Settings
  */
-class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 
 	public function set_up() {
 		parent::set_up();
@@ -24,9 +24,9 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 		 * wp_update_plugins() reaching for WordPress.org, and header sends the
 		 * CLI cannot make -- none of which is what this file is testing.
 		 */
-		PluginsUsed_Settings::init();
-		PluginsUsed_Settings::add_page();
-		PluginsUsed_Settings::register();
+		WP_PluginsUsed_Settings::init();
+		WP_PluginsUsed_Settings::add_page();
+		WP_PluginsUsed_Settings::register();
 	}
 
 	public function test_page_is_registered_under_settings() {
@@ -42,7 +42,7 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 
 		$this->assertArrayHasKey( 'pluginsused_options', $registered );
 		$this->assertSame(
-			array( 'PluginsUsed_Options', 'sanitize' ),
+			array( 'WP_PluginsUsed_Options', 'sanitize' ),
 			$registered['pluginsused_options']['sanitize_callback']
 		);
 	}
@@ -61,7 +61,7 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 	 */
 	protected function render() {
 		ob_start();
-		PluginsUsed_Settings::render();
+		WP_PluginsUsed_Settings::render();
 
 		return ob_get_clean();
 	}
@@ -124,9 +124,9 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 				'hidden_plugins' => array( 'beta Test Plugin' ),
 			)
 		);
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringNotContainsString( 'beta Test Plugin', PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringNotContainsString( 'beta Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ) );
 	}
 
 	public function test_submitting_an_empty_form_clears_the_settings() {
@@ -164,8 +164,8 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 
 		$this->assertSame( array( $name ), get_option( 'pluginsused_options' )['hidden_plugins'] );
 
-		PluginsUsed_Template::reset_cache();
-		$markup = PluginsUsed_Template::render( 'active' ) . PluginsUsed_Template::render( 'inactive' );
+		WP_PluginsUsed_Template::reset_cache();
+		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 		$parsed = $this->parse_html( $markup );
 
 		$this->assertStringNotContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent );
@@ -204,7 +204,7 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 
 	public function test_the_screen_warns_when_the_legacy_constant_overrides_it() {
 		ob_start();
-		PluginsUsed_Settings::field_show_version();
+		WP_PluginsUsed_Settings::field_show_version();
 		$html = ob_get_clean();
 
 		if ( defined( 'PLUGINSUSED_SHOW_VERSION' ) ) {

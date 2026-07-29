@@ -6,10 +6,10 @@
  */
 
 /**
- * @covers PluginsUsed
+ * @covers WP_PluginsUsed
  * @covers ::display_pluginsused
  */
-class Test_PluginsUsed_Shortcodes extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Shortcodes extends WP_PluginsUsed_TestCase {
 
 	public function test_all_three_shortcodes_are_registered() {
 		$this->assertTrue( shortcode_exists( 'stats_pluginsused' ) );
@@ -18,9 +18,9 @@ class Test_PluginsUsed_Shortcodes extends PluginsUsed_TestCase {
 	}
 
 	public function test_shortcodes_match_the_template_output() {
-		$this->assertSame( PluginsUsed_Template::render( 'stats' ), do_shortcode( '[stats_pluginsused]' ) );
-		$this->assertSame( PluginsUsed_Template::render( 'active' ), do_shortcode( '[active_pluginsused]' ) );
-		$this->assertSame( PluginsUsed_Template::render( 'inactive' ), do_shortcode( '[inactive_pluginsused]' ) );
+		$this->assertSame( WP_PluginsUsed_Template::render( 'stats' ), do_shortcode( '[stats_pluginsused]' ) );
+		$this->assertSame( WP_PluginsUsed_Template::render( 'active' ), do_shortcode( '[active_pluginsused]' ) );
+		$this->assertSame( WP_PluginsUsed_Template::render( 'inactive' ), do_shortcode( '[inactive_pluginsused]' ) );
 	}
 
 	public function test_shortcodes_render_inside_post_content() {

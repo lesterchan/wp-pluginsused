@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reads and normalises the plugin's settings.
  */
-class PluginsUsed_Options {
+class WP_PluginsUsed_Options {
 
 	/**
 	 * Name of the single option row holding every setting.

@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Builds the active/inactive plugin listings and their markup.
  */
-class PluginsUsed_Template {
+class WP_PluginsUsed_Template {
 
 	/**
 	 * Per-request cache of the collected listing.
@@ -69,8 +69,8 @@ class PluginsUsed_Template {
 		$sitewide = (array) get_site_option( 'active_sitewide_plugins', array() );
 		$active   = array_merge( $active, array_keys( $sitewide ) );
 
-		$hidden       = PluginsUsed_Options::hidden_plugins();
-		$show_version = PluginsUsed_Options::show_version();
+		$hidden       = WP_PluginsUsed_Options::hidden_plugins();
+		$show_version = WP_PluginsUsed_Options::show_version();
 
 		$plugins_used = array(
 			'active'   => array(),

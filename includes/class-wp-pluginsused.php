@@ -10,19 +10,19 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Wires the plugin's shortcodes and admin screen up.
  */
-class PluginsUsed {
+class WP_PluginsUsed {
 
 	/**
 	 * Sole instance.
 	 *
-	 * @var PluginsUsed|null
+	 * @var WP_PluginsUsed|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Retrieve, creating on first call.
 	 *
-	 * @return PluginsUsed
+	 * @return WP_PluginsUsed
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -41,7 +41,7 @@ class PluginsUsed {
 		add_shortcode( 'inactive_pluginsused', array( $this, 'shortcode_inactive' ) );
 
 		if ( is_admin() ) {
-			PluginsUsed_Settings::init();
+			WP_PluginsUsed_Settings::init();
 		}
 	}
 
@@ -51,7 +51,7 @@ class PluginsUsed {
 	 * @return string
 	 */
 	public function shortcode_stats() {
-		return PluginsUsed_Template::render( 'stats' );
+		return WP_PluginsUsed_Template::render( 'stats' );
 	}
 
 	/**
@@ -60,7 +60,7 @@ class PluginsUsed {
 	 * @return string
 	 */
 	public function shortcode_active() {
-		return PluginsUsed_Template::render( 'active' );
+		return WP_PluginsUsed_Template::render( 'active' );
 	}
 
 	/**
@@ -69,6 +69,6 @@ class PluginsUsed {
 	 * @return string
 	 */
 	public function shortcode_inactive() {
-		return PluginsUsed_Template::render( 'inactive' );
+		return WP_PluginsUsed_Template::render( 'inactive' );
 	}
 }

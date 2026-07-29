@@ -9,9 +9,9 @@
  */
 
 /**
- * @covers PluginsUsed_Template::render
+ * @covers WP_PluginsUsed_Template::render
  */
-class Test_PluginsUsed_Stats extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Stats extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Force the listing to an exact shape, bypassing what is on disk.
@@ -38,12 +38,12 @@ class Test_PluginsUsed_Stats extends PluginsUsed_TestCase {
 		};
 
 		add_filter( 'pluginsused_plugins_used', $callback );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$stats = PluginsUsed_Template::render( 'stats' );
+		$stats = WP_PluginsUsed_Template::render( 'stats' );
 
 		remove_filter( 'pluginsused_plugins_used', $callback );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
 		return $stats;
 	}
@@ -85,10 +85,10 @@ class Test_PluginsUsed_Stats extends PluginsUsed_TestCase {
 		};
 
 		add_filter( 'pluginsused_plugins_used', $callback );
-		PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertSame( '', PluginsUsed_Template::render( 'active' ) );
-		$this->assertSame( '', PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'inactive' ) );
 
 		remove_filter( 'pluginsused_plugins_used', $callback );
 	}

@@ -17,7 +17,7 @@
  *
  * @return string[] Absolute paths.
  */
-function pluginsused_test_source_files() {
+function wp_pluginsused_test_source_files() {
 	$root = dirname( __DIR__ );
 
 	return array_merge(
@@ -37,10 +37,10 @@ function pluginsused_test_source_files() {
  * @param string[] $skip Basenames to leave out.
  * @return string
  */
-function pluginsused_test_source_code( array $skip = array() ) {
+function wp_pluginsused_test_source_code( array $skip = array() ) {
 	$code = '';
 
-	foreach ( pluginsused_test_source_files() as $file ) {
+	foreach ( wp_pluginsused_test_source_files() as $file ) {
 		if ( in_array( basename( $file ), $skip, true ) ) {
 			continue;
 		}

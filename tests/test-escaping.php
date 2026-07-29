@@ -11,9 +11,9 @@
  */
 
 /**
- * @covers PluginsUsed_Template::format
+ * @covers WP_PluginsUsed_Template::format
  */
-class Test_PluginsUsed_Escaping extends PluginsUsed_TestCase {
+class Test_PluginsUsed_Escaping extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Both listings concatenated.
@@ -21,7 +21,7 @@ class Test_PluginsUsed_Escaping extends PluginsUsed_TestCase {
 	 * @return string
 	 */
 	protected function markup() {
-		return PluginsUsed_Template::render( 'active' ) . PluginsUsed_Template::render( 'inactive' );
+		return WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 	}
 
 	public function test_no_event_handler_attribute_reaches_the_dom() {

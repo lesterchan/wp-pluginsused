@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers and renders Settings -> WP-PluginsUsed.
  */
-class PluginsUsed_Settings {
+class WP_PluginsUsed_Settings {
 
 	/**
 	 * Settings page slug.
@@ -85,11 +85,11 @@ class PluginsUsed_Settings {
 	public static function register() {
 		register_setting(
 			self::GROUP,
-			PluginsUsed_Options::OPTION,
+			WP_PluginsUsed_Options::OPTION,
 			array(
 				'type'              => 'array',
-				'sanitize_callback' => array( 'PluginsUsed_Options', 'sanitize' ),
-				'default'           => PluginsUsed_Options::defaults(),
+				'sanitize_callback' => array( 'WP_PluginsUsed_Options', 'sanitize' ),
+				'default'           => WP_PluginsUsed_Options::defaults(),
 			)
 		);
 
@@ -130,8 +130,8 @@ class PluginsUsed_Settings {
 	 * @return void
 	 */
 	public static function field_show_version() {
-		$options = PluginsUsed_Options::get();
-		$name    = PluginsUsed_Options::OPTION . '[show_version]';
+		$options = WP_PluginsUsed_Options::get();
+		$name    = WP_PluginsUsed_Options::OPTION . '[show_version]';
 
 		printf(
 			'<label><input type="checkbox" name="%s" value="1"%s /> %s</label>',
@@ -174,9 +174,9 @@ class PluginsUsed_Settings {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		$options = PluginsUsed_Options::get();
+		$options = WP_PluginsUsed_Options::get();
 		$hidden  = $options['hidden_plugins'];
-		$name    = PluginsUsed_Options::OPTION . '[hidden_plugins][]';
+		$name    = WP_PluginsUsed_Options::OPTION . '[hidden_plugins][]';
 
 		$names = array();
 

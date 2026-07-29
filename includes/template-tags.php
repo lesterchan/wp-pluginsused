@@ -19,10 +19,10 @@ if ( ! function_exists( 'display_pluginsused' ) ) {
 	 * @return string|void Markup, or nothing when $display is true.
 	 */
 	function display_pluginsused( $type, $display = false ) {
-		$out = PluginsUsed_Template::render( $type );
+		$out = WP_PluginsUsed_Template::render( $type );
 
 		if ( $display ) {
-			// Assembled by PluginsUsed_Template, which escapes at every sink.
+			// Assembled by WP_PluginsUsed_Template, which escapes at every sink.
 			echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
