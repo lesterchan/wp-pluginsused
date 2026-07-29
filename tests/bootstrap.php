@@ -8,6 +8,16 @@
  * @package WP-PluginsUsed
  */
 
+/*
+ * The fixtures write real plugin files through WP_Filesystem rather than through
+ * mkdir() and file_put_contents(). Left to itself, get_filesystem_method() picks
+ * "direct" only when the running user owns the files, which is not true inside a
+ * container whose wp-content is bind-mounted from the host -- it would fall
+ * through to the FTP transport and hand back false. Pinning the constant makes
+ * the choice explicit instead of environment-dependent.
+ */
+define( 'FS_METHOD', 'direct' );
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {

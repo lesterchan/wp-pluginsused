@@ -225,7 +225,7 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	/**
-	 * wptexturize() was applied to descriptions before 2.0.0 and core's
+	 * Descriptions were run through wptexturize() before 2.0.0 and core's
 	 * get_plugins() does not do it, so the plugin must keep doing it itself.
 	 */
 	public function test_description_is_texturized() {
@@ -288,17 +288,20 @@ class Test_PluginsUsed_Template extends PluginsUsed_TestCase {
 	}
 
 	public function test_a_plugin_without_a_name_header_is_skipped() {
-		$dir = WP_PLUGIN_DIR . '/zzz-nameless';
-		mkdir( $dir, 0777, true );
-		file_put_contents( $dir . '/zzz-nameless.php', "<?php\n/*\nDescription: No name header.\nVersion: 1.0\n*/\n" );
+		$this->create_plugin_fixture(
+			'zzz-nameless',
+			array(
+				'Description' => 'No name header.',
+				'Version'     => '1.0',
+			)
+		);
 		$this->reset_plugin_state();
 
 		$used  = PluginsUsed_Template::get_plugins_used();
 		$names = wp_list_pluck( array_merge( $used['active'], $used['inactive'] ), 'Plugin_Name' );
 
-		unlink( $dir . '/zzz-nameless.php' );
-		rmdir( $dir );
+		$this->delete_plugin_fixture( 'zzz-nameless' );
 
-		$this->assertNotContains( '', $names );
+		$this->assertNotContains( '', $names, 'A plugin with no Name header has nothing to list.' );
 	}
 }

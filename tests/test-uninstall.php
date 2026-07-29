@@ -26,7 +26,7 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
-	 * uninstall.php with every comment removed.
+	 * The uninstall routine with every comment removed.
 	 *
 	 * Matching the raw file is not good enough: this file *documents* the
 	 * arguments it passes, so a regex for "'number' => 0" happily matches the
@@ -63,8 +63,8 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
-	 * switch_to_blog() pushes onto a stack, so restoring once after the loop
-	 * leaves it unwound by exactly one.
+	 * Restoring once after the loop leaves the switch_to_blog() stack unwound
+	 * by exactly one, because every switch pushes onto it.
 	 */
 	public function test_restore_current_blog_is_inside_the_loop() {
 		$code = $this->code();

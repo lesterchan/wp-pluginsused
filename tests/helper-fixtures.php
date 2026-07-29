@@ -72,31 +72,84 @@ abstract class PluginsUsed_TestCase extends WP_UnitTestCase {
 		parent::set_up();
 
 		foreach ( self::$fixtures as $slug => $headers ) {
-			$dir = WP_PLUGIN_DIR . '/' . $slug;
-
-			if ( ! is_dir( $dir ) ) {
-				mkdir( $dir, 0777, true );
-			}
-
-			$php = "<?php\n/*\n";
-			foreach ( array(
-				'Plugin Name' => $headers['Name'],
-				'Plugin URI'  => $headers['PluginURI'],
-				'Description' => $headers['Description'],
-				'Author'      => $headers['Author'],
-				'Author URI'  => $headers['AuthorURI'],
-				'Version'     => $headers['Version'],
-			) as $label => $value ) {
-				$php .= $label . ': ' . $value . "\n";
-			}
-			$php .= "*/\n";
-
-			file_put_contents( $dir . '/' . $slug . '.php', $php );
+			$this->create_plugin_fixture(
+				$slug,
+				array(
+					'Plugin Name' => $headers['Name'],
+					'Plugin URI'  => $headers['PluginURI'],
+					'Description' => $headers['Description'],
+					'Author'      => $headers['Author'],
+					'Author URI'  => $headers['AuthorURI'],
+					'Version'     => $headers['Version'],
+				)
+			);
 		}
 
 		update_option( 'active_plugins', self::$active );
 
 		$this->reset_plugin_state();
+	}
+
+	/**
+	 * The filesystem abstraction, initialised on first use.
+	 *
+	 * The fixtures are real files in wp-content/plugins, so something has to
+	 * write them; WP_Filesystem is the API WordPress offers for that, and
+	 * tests/bootstrap.php pins the transport to "direct" so this never has to
+	 * negotiate credentials.
+	 *
+	 * @return WP_Filesystem_Base
+	 */
+	protected function filesystem() {
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+
+			WP_Filesystem();
+		}
+
+		return $wp_filesystem;
+	}
+
+	/**
+	 * Write one fixture plugin into wp-content/plugins.
+	 *
+	 * @param string   $slug    Directory and file name, without the extension.
+	 * @param string[] $headers Plugin header labels mapped to their values.
+	 * @return void
+	 */
+	protected function create_plugin_fixture( $slug, array $headers ) {
+		$filesystem = $this->filesystem();
+		$dir        = WP_PLUGIN_DIR . '/' . $slug;
+
+		if ( ! $filesystem->is_dir( $dir ) ) {
+			$filesystem->mkdir( $dir );
+		}
+
+		$php = "<?php\n/*\n";
+
+		foreach ( $headers as $label => $value ) {
+			$php .= $label . ': ' . $value . "\n";
+		}
+
+		$php .= "*/\n";
+
+		$filesystem->put_contents( $dir . '/' . $slug . '.php', $php );
+	}
+
+	/**
+	 * Remove one fixture plugin again.
+	 *
+	 * @param string $slug Directory and file name, without the extension.
+	 * @return void
+	 */
+	protected function delete_plugin_fixture( $slug ) {
+		$filesystem = $this->filesystem();
+		$dir        = WP_PLUGIN_DIR . '/' . $slug;
+
+		$filesystem->delete( $dir . '/' . $slug . '.php' );
+		$filesystem->rmdir( $dir );
 	}
 
 	/**
@@ -106,15 +159,7 @@ abstract class PluginsUsed_TestCase extends WP_UnitTestCase {
 	 */
 	public function tear_down() {
 		foreach ( array_keys( self::$fixtures ) as $slug ) {
-			$dir = WP_PLUGIN_DIR . '/' . $slug;
-
-			if ( file_exists( $dir . '/' . $slug . '.php' ) ) {
-				unlink( $dir . '/' . $slug . '.php' );
-			}
-
-			if ( is_dir( $dir ) ) {
-				rmdir( $dir );
-			}
+			$this->delete_plugin_fixture( $slug );
 		}
 
 		unset( $GLOBALS['pluginsused_hidden_plugins'] );
@@ -182,15 +227,18 @@ abstract class PluginsUsed_TestCase extends WP_UnitTestCase {
 
 		foreach ( $parsed['doc']->getElementsByTagName( '*' ) as $element ) {
 			foreach ( $element->attributes as $attribute ) {
-				$name = strtolower( $attribute->nodeName );
+				// DOMNode's own properties are camelCase and are not ours to
+				// rename, so the node is described through getNodePath() and
+				// read through DOMAttr's lowercase name/value pair instead.
+				$name = strtolower( $attribute->name );
 
 				if ( 0 === strpos( $name, 'on' ) || 'autofocus' === $name ) {
-					$handlers[] = $element->nodeName . '[' . $name . ']';
+					$handlers[] = $element->getNodePath() . '[' . $name . ']';
 				}
 
 				if ( in_array( $name, array( 'href', 'src' ), true )
-					&& preg_match( '~^\s*javascript:~i', $attribute->nodeValue ) ) {
-					$schemes[] = $element->nodeName . '[' . $name . ']';
+					&& preg_match( '~^\s*javascript:~i', $attribute->value ) ) {
+					$schemes[] = $element->getNodePath() . '[' . $name . ']';
 				}
 			}
 		}

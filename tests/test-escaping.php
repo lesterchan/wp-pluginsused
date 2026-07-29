@@ -76,8 +76,8 @@ class Test_PluginsUsed_Escaping extends PluginsUsed_TestCase {
 	}
 
 	/**
-	 * esc_attr() passes $double_encode = false, so an entity that is already
-	 * encoded must not gain a second layer.
+	 * An entity that arrives already encoded must not gain a second layer:
+	 * esc_attr() passes $double_encode = false precisely so it does not.
 	 */
 	public function test_entities_are_not_double_encoded() {
 		$this->assertStringNotContainsString( '&amp;amp;', $this->markup() );
@@ -85,20 +85,20 @@ class Test_PluginsUsed_Escaping extends PluginsUsed_TestCase {
 	}
 
 	public function test_a_script_tag_in_a_header_is_stripped() {
-		$dir = WP_PLUGIN_DIR . '/zzz-script';
-		mkdir( $dir, 0777, true );
-		file_put_contents(
-			$dir . '/zzz-script.php',
-			"<?php\n/*\nPlugin Name: Script <script>alert(1)</script> Plugin\nVersion: 1.0\n*/\n"
+		$this->create_plugin_fixture(
+			'zzz-script',
+			array(
+				'Plugin Name' => 'Script <script>alert(1)</script> Plugin',
+				'Version'     => '1.0',
+			)
 		);
 		$this->reset_plugin_state();
 
 		$markup = $this->markup();
 
-		unlink( $dir . '/zzz-script.php' );
-		rmdir( $dir );
+		$this->delete_plugin_fixture( 'zzz-script' );
 
-		$this->assertStringNotContainsString( '<script', $markup );
+		$this->assertStringNotContainsString( '<script', $markup, 'A tag in a plugin header must never reach the page.' );
 		$this->assertStringContainsString( 'alert(1)', $markup, 'The text is kept; only the tag goes.' );
 	}
 }

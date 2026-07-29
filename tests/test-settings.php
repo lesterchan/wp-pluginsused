@@ -97,8 +97,9 @@ class Test_PluginsUsed_Settings extends PluginsUsed_TestCase {
 	}
 
 	/**
-	 * register_setting() installs a sanitize_option_{$option} filter, so a plain
-	 * update_option() takes exactly the path options.php takes on submit.
+	 * A plain update_option() takes exactly the path options.php takes on
+	 * submit, because register_setting() installs a sanitize_option_{$option}
+	 * filter that runs either way.
 	 */
 	public function test_save_round_trip_runs_the_sanitizer() {
 		update_option(
