@@ -11,7 +11,7 @@
 /**
  * @coversNothing
  */
-class Test_PluginsUsed_Deprecated extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 	public function tear_down() {
 		unset( $GLOBALS['wp_plugins'], $GLOBALS['plugins_used'] );

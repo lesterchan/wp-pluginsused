@@ -8,7 +8,7 @@
 /**
  * @covers WP_PluginsUsed_Template
  */
-class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Names present in one of the rendered listings.

@@ -13,7 +13,7 @@
 /**
  * @covers WP_PluginsUsed_Template::format
  */
-class Test_PluginsUsed_Escaping extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Escaping_Test extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Both listings concatenated.

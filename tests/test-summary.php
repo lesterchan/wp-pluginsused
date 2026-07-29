@@ -11,7 +11,7 @@
 /**
  * @covers WP_PluginsUsed_Template::render
  */
-class Test_PluginsUsed_Stats extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Force the listing to an exact shape, bypassing what is on disk.

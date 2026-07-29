@@ -14,7 +14,7 @@
 /**
  * @coversNothing
  */
-class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
+class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Contents of uninstall.php.
@@ -112,11 +112,7 @@ class Test_PluginsUsed_Uninstall extends WP_UnitTestCase {
 		update_option( 'wp_pluginsused_version', array( 'plugin' => '2.0.0' ) );
 		update_option( 'pluginsused_options', array( 'show_version' => false ) );
 
-		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			define( 'WP_UNINSTALL_PLUGIN', 'wp-pluginsused/wp-pluginsused.php' );
-		}
-
-		include_once dirname( __DIR__ ) . '/uninstall.php';
+		$this->run_uninstall();
 
 		$this->assertFalse( get_option( 'wp_pluginsused_options' ), 'The settings row must go.' );
 		$this->assertFalse( get_option( 'wp_pluginsused_version' ), 'The marker row must go with it.' );

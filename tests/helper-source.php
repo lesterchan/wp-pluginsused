@@ -50,3 +50,13 @@ function wp_pluginsused_test_source_code( array $skip = array() ) {
 
 	return $code;
 }
+
+/**
+ * Read a file from the plugin root.
+ *
+ * @param string $relative Path relative to the plugin root.
+ * @return string
+ */
+function wp_pluginsused_test_read( $relative ) {
+	return (string) file_get_contents( dirname( __DIR__ ) . '/' . $relative );
+}

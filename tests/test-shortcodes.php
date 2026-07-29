@@ -9,7 +9,7 @@
  * @covers WP_PluginsUsed
  * @covers ::display_pluginsused
  */
-class Test_PluginsUsed_Shortcodes extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Shortcodes_Test extends WP_PluginsUsed_TestCase {
 
 	public function test_all_three_shortcodes_are_registered() {
 		$this->assertTrue( shortcode_exists( 'stats_pluginsused' ) );

@@ -8,7 +8,7 @@
 /**
  * @covers WP_PluginsUsed_Options
  */
-class Test_PluginsUsed_Options extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 
 	public function test_defaults_apply_when_no_row_exists() {
 		delete_option( 'wp_pluginsused_options' );

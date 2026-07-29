@@ -183,6 +183,50 @@ abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Run the uninstall routine.
+	 *
+	 * The uninstall file declares a function, so it can only be included once in
+	 * a process; a second require_once is a silent no-op and would leave a test
+	 * asserting against rows nothing had removed. The first caller includes the
+	 * file, which is what exercises its multisite branch, and every later caller
+	 * runs the routine for the current site directly.
+	 *
+	 * @return void
+	 */
+	protected function run_uninstall() {
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', 'wp-pluginsused/wp-pluginsused.php' );
+		}
+
+		if ( function_exists( 'wp_pluginsused_uninstall_site' ) ) {
+			wp_pluginsused_uninstall_site();
+
+			return;
+		}
+
+		require dirname( __DIR__ ) . '/uninstall.php';
+	}
+
+	/**
+	 * Every option row the plugin owns, read straight from the table.
+	 *
+	 * A LIKE rather than a list of names: a row added later and forgotten in
+	 * uninstall.php is exactly the failure this is here to catch.
+	 *
+	 * @return string[]
+	 */
+	protected function stored_option_names() {
+		global $wpdb;
+
+		return (array) $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$wpdb->esc_like( 'wp_pluginsused_' ) . '%'
+			)
+		);
+	}
+
+	/**
 	 * Parse markup and return the DOMDocument, ignoring libxml's ignorance of SVG.
 	 *
 	 * @param string $html Markup to parse.

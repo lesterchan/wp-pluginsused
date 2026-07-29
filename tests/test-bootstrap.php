@@ -8,7 +8,7 @@
 /**
  * @covers WP_PluginsUsed
  */
-class Test_PluginsUsed_Bootstrap extends WP_UnitTestCase {
+class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 
 	/**
 	 * Every shipped PHP file that holds code, and so needs an ABSPATH guard.

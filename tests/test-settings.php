@@ -8,7 +8,7 @@
 /**
  * @covers WP_PluginsUsed_Settings
  */
-class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
+class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 
 	public function set_up() {
 		parent::set_up();
