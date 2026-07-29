@@ -202,16 +202,21 @@ class Test_PluginsUsed_Settings extends WP_PluginsUsed_TestCase {
 		);
 	}
 
-	public function test_the_screen_warns_when_the_legacy_constant_overrides_it() {
-		ob_start();
-		WP_PluginsUsed_Settings::field_show_version();
-		$html = ob_get_clean();
+	/**
+	 * Nothing on the screen may point a site owner at an identifier 2.0.0
+	 * dropped: the checkbox is the whole story for version numbers, and the
+	 * hidden-plugins hint names the prefixed filter.
+	 */
+	public function test_the_screen_names_no_dropped_identifier() {
+		$html = $this->render();
 
-		if ( defined( 'PLUGINSUSED_SHOW_VERSION' ) ) {
-			$this->assertStringContainsString( 'PLUGINSUSED_SHOW_VERSION', $html );
-		} else {
-			$this->assertStringNotContainsString( 'PLUGINSUSED_SHOW_VERSION', $html );
-		}
+		$this->assertStringNotContainsString( 'PLUGINSUSED_SHOW_VERSION', $html, 'The constant is gone.' );
+		$this->assertStringNotContainsString( '$pluginsused_hidden_plugins', $html, 'So is the global.' );
+		$this->assertStringContainsString(
+			'wp_pluginsused_hidden_plugins',
+			$html,
+			'The surviving filter is named in full so it can be copied off the screen.'
+		);
 	}
 
 	public function test_settings_page_markup_is_well_formed() {

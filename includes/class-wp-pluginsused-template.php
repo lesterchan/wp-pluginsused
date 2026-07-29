@@ -109,11 +109,13 @@ class WP_PluginsUsed_Template {
 		/**
 		 * Filters the collected plugin listing before it is rendered.
 		 *
+		 * Renamed from `pluginsused_plugins_used` in 2.0.0.
+		 *
 		 * @since 2.0.0
 		 *
 		 * @param array $plugins_used Listing keyed by 'active' and 'inactive'.
 		 */
-		self::$plugins_used = apply_filters( 'pluginsused_plugins_used', $plugins_used );
+		self::$plugins_used = apply_filters( 'wp_pluginsused_plugins_used', $plugins_used );
 
 		return self::$plugins_used;
 	}

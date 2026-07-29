@@ -113,12 +113,12 @@ class Test_PluginsUsed_Template extends WP_PluginsUsed_TestCase {
 			return $used;
 		};
 
-		add_filter( 'pluginsused_plugins_used', $callback );
+		add_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
 
-		remove_filter( 'pluginsused_plugins_used', $callback );
+		remove_filter( 'wp_pluginsused_plugins_used', $callback );
 	}
 
 	public function test_unknown_type_renders_the_inactive_listing() {

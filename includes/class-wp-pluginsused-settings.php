@@ -147,17 +147,6 @@ class WP_PluginsUsed_Settings {
 			checked( ! empty( $options['show_version'] ), true, false ),
 			esc_html__( 'Show each plugin&#8217;s version number next to its name', 'wp-pluginsused' )
 		);
-
-		/*
-		 * If the site defines the legacy constant it overrides the stored value,
-		 * so say so rather than letting the checkbox quietly misreport reality.
-		 */
-		if ( defined( 'PLUGINSUSED_SHOW_VERSION' ) ) {
-			printf(
-				'<p class="description">%s</p>',
-				esc_html__( 'The PLUGINSUSED_SHOW_VERSION constant is defined on this site and overrides this setting.', 'wp-pluginsused' )
-			);
-		}
 	}
 
 	/**
@@ -221,12 +210,12 @@ class WP_PluginsUsed_Settings {
 		echo '</fieldset>';
 
 		/*
-		 * The global and the filter both merge into whatever is ticked here, so
-		 * a site can still hide a plugin this screen cannot see.
+		 * The filter merges into whatever is ticked here, so a site can still
+		 * hide a plugin this screen cannot see.
 		 */
 		printf(
 			'<p class="description">%s</p>',
-			esc_html__( 'Plugins hidden through the pluginsused_hidden_plugins filter are not shown here, and stay hidden regardless.', 'wp-pluginsused' )
+			esc_html__( 'Plugins hidden through the wp_pluginsused_hidden_plugins filter are not shown here, and stay hidden regardless.', 'wp-pluginsused' )
 		);
 	}
 

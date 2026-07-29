@@ -177,37 +177,50 @@ class Test_PluginsUsed_Options extends WP_PluginsUsed_TestCase {
 	public function test_show_version_filter_overrides_the_stored_value() {
 		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 
-		add_filter( 'pluginsused_show_version', '__return_true' );
+		add_filter( 'wp_pluginsused_show_version', '__return_true' );
 		$this->assertTrue( WP_PluginsUsed_Options::show_version() );
 
-		remove_filter( 'pluginsused_show_version', '__return_true' );
+		remove_filter( 'wp_pluginsused_show_version', '__return_true' );
 		$this->assertFalse( WP_PluginsUsed_Options::show_version() );
 	}
 
 	/**
-	 * The pre-2.0.0 way of hiding plugins was a global, documented in the readme.
+	 * The pre-2.0.0 way of hiding plugins was an unprefixed global variable.
+	 * 2.0.0 stops reading it: the settings screen and the prefixed filter are
+	 * the two supported ways, and nothing unprefixed survives.
 	 */
-	public function test_legacy_global_still_hides_plugins() {
+	public function test_the_legacy_global_is_no_longer_consulted() {
 		$GLOBALS['pluginsused_hidden_plugins'] = array( 'Hidden Test Plugin' );
 
-		$this->assertContains( 'Hidden Test Plugin', WP_PluginsUsed_Options::hidden_plugins() );
+		$this->assertNotContains(
+			'Hidden Test Plugin',
+			WP_PluginsUsed_Options::hidden_plugins(),
+			'The unprefixed global was dropped in 2.0.0 and must not hide anything.'
+		);
 	}
 
-	public function test_legacy_global_merges_with_the_stored_list_rather_than_replacing_it() {
-		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
-		$GLOBALS['pluginsused_hidden_plugins'] = array( 'Hidden Test Plugin' );
-
-		$hidden = WP_PluginsUsed_Options::hidden_plugins();
-
-		$this->assertContains( 'Alpha Test Plugin', $hidden );
-		$this->assertContains( 'Hidden Test Plugin', $hidden );
+	public function test_the_legacy_constant_is_no_longer_consulted() {
+		$this->assertStringNotContainsString(
+			'PLUGINSUSED_SHOW_VERSION',
+			wp_pluginsused_test_source_code(),
+			'The unprefixed constant was dropped in 2.0.0; the stored setting is the only source.'
+		);
 	}
 
 	public function test_hidden_plugins_are_deduplicated() {
-		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
-		$GLOBALS['pluginsused_hidden_plugins'] = array( 'Alpha Test Plugin' );
+		$callback = static function ( $hidden ) {
+			$hidden[] = 'Alpha Test Plugin';
+			return $hidden;
+		};
 
-		$this->assertSame( array( 'Alpha Test Plugin' ), WP_PluginsUsed_Options::hidden_plugins() );
+		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha Test Plugin' ) ) );
+		add_filter( 'wp_pluginsused_hidden_plugins', $callback );
+
+		$hidden = WP_PluginsUsed_Options::hidden_plugins();
+
+		remove_filter( 'wp_pluginsused_hidden_plugins', $callback );
+
+		$this->assertSame( array( 'Alpha Test Plugin' ), $hidden, 'A name added twice must be listed once.' );
 	}
 
 	public function test_hidden_plugins_filter_applies() {
@@ -216,19 +229,19 @@ class Test_PluginsUsed_Options extends WP_PluginsUsed_TestCase {
 			return $hidden;
 		};
 
-		add_filter( 'pluginsused_hidden_plugins', $callback );
+		add_filter( 'wp_pluginsused_hidden_plugins', $callback );
 		$this->assertContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins() );
 
-		remove_filter( 'pluginsused_hidden_plugins', $callback );
+		remove_filter( 'wp_pluginsused_hidden_plugins', $callback );
 		$this->assertNotContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins() );
 	}
 
 	public function test_hidden_plugins_filter_returning_a_non_array_is_survivable() {
-		add_filter( 'pluginsused_hidden_plugins', '__return_false' );
+		add_filter( 'wp_pluginsused_hidden_plugins', '__return_false' );
 
 		$this->assertSame( array(), WP_PluginsUsed_Options::hidden_plugins() );
 
-		remove_filter( 'pluginsused_hidden_plugins', '__return_false' );
+		remove_filter( 'wp_pluginsused_hidden_plugins', '__return_false' );
 	}
 
 	public function test_sanitize_normalises_a_submitted_form() {

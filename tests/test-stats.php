@@ -37,12 +37,12 @@ class Test_PluginsUsed_Stats extends WP_PluginsUsed_TestCase {
 			);
 		};
 
-		add_filter( 'pluginsused_plugins_used', $callback );
+		add_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$stats = WP_PluginsUsed_Template::render( 'stats' );
 
-		remove_filter( 'pluginsused_plugins_used', $callback );
+		remove_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
 		return $stats;
@@ -84,13 +84,13 @@ class Test_PluginsUsed_Stats extends WP_PluginsUsed_TestCase {
 			);
 		};
 
-		add_filter( 'pluginsused_plugins_used', $callback );
+		add_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
 		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
 		$this->assertSame( '', WP_PluginsUsed_Template::render( 'inactive' ) );
 
-		remove_filter( 'pluginsused_plugins_used', $callback );
+		remove_filter( 'wp_pluginsused_plugins_used', $callback );
 	}
 
 	/**

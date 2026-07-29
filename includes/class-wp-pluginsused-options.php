@@ -170,24 +170,19 @@ class WP_PluginsUsed_Options {
 		$options = self::get();
 		$show    = (bool) $options['show_version'];
 
-		/*
-		 * Backwards compatibility: until 2.0.0 this was a constant defined in
-		 * the plugin file. The plugin no longer defines it, so it is only set
-		 * if the site itself does -- in wp-config.php or an mu-plugin -- and
-		 * an explicit site-level constant should outrank the stored setting.
-		 */
-		if ( defined( 'PLUGINSUSED_SHOW_VERSION' ) ) {
-			$show = (bool) constant( 'PLUGINSUSED_SHOW_VERSION' );
-		}
-
 		/**
 		 * Filters whether plugin version numbers are displayed.
+		 *
+		 * Renamed from `pluginsused_show_version` in 2.0.0. The old spelling is
+		 * gone rather than deprecated: every hook in this collection carries the
+		 * plugin's own prefix now, and a shim that keeps an unprefixed name alive
+		 * keeps the clash it was renamed to avoid.
 		 *
 		 * @since 2.0.0
 		 *
 		 * @param bool $show Whether to show version numbers.
 		 */
-		return (bool) apply_filters( 'pluginsused_show_version', $show );
+		return (bool) apply_filters( 'wp_pluginsused_show_version', $show );
 	}
 
 	/**
@@ -199,24 +194,19 @@ class WP_PluginsUsed_Options {
 		$options = self::get();
 		$hidden  = $options['hidden_plugins'];
 
-		/*
-		 * Backwards compatibility: the documented pre-2.0.0 way to hide
-		 * plugins was to edit this global into the plugin file. Anything a
-		 * site still sets is merged in rather than replaced, so the setting
-		 * screen and the global can coexist.
-		 */
-		if ( isset( $GLOBALS['pluginsused_hidden_plugins'] ) && is_array( $GLOBALS['pluginsused_hidden_plugins'] ) ) {
-			$hidden = array_merge( $hidden, $GLOBALS['pluginsused_hidden_plugins'] );
-		}
-
 		/**
 		 * Filters the list of plugin names to hide.
+		 *
+		 * Renamed from `pluginsused_hidden_plugins` in 2.0.0, and it no longer
+		 * shares its name with a global variable: the settings screen is where
+		 * plugins are hidden now, and this filter is for anything the screen
+		 * cannot see.
 		 *
 		 * @since 2.0.0
 		 *
 		 * @param string[] $hidden Plugin names to hide, matched exactly against the plugin's Name header.
 		 */
-		$hidden = apply_filters( 'pluginsused_hidden_plugins', $hidden );
+		$hidden = apply_filters( 'wp_pluginsused_hidden_plugins', $hidden );
 
 		if ( ! is_array( $hidden ) ) {
 			return array();
