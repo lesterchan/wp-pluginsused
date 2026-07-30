@@ -277,7 +277,7 @@ class WP_PluginsUsed_Settings {
 		}
 
 		echo '<div class="wrap">';
-		printf( '<h1>%s</h1>', esc_html__( 'WP-PluginsUsed', 'wp-pluginsused' ) );
+		printf( '<h1>%s</h1>', esc_html__( 'Plugins Used', 'wp-pluginsused' ) );
 
 		printf(
 			'<p>%s</p>',
