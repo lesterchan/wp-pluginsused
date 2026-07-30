@@ -148,7 +148,7 @@ settings screen.
 ### 2.0.0
 The first update since 1.50, and five things are worth knowing before you take it.
 
-**Your site needs WordPress 6.8 or later and PHP 8.2 or later.** Below either of those you will not be offered the update at all, and will stay on 1.50 indefinitely. If your host still runs PHP 7.4, ask to be moved to a supported version before you update — 7.4 stopped receiving security fixes in 2022.
+**Your site needs WordPress 6.8 or later and PHP 8.2 or later.** Below either of those you will not be offered the update at all, and will stay on 1.50 indefinitely. Check `WP-Admin -> Tools -> Site Health -> Info -> Server` for your PHP version; if it is below 8.2, ask your host to move you up. PHP 8.1 and everything before it stopped receiving security fixes.
 
 **The three filters have been renamed, and the old names now do nothing at all.** If you or whoever built your site added code to change how this plugin behaves, it needs one edit:
 
