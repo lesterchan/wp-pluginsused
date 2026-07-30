@@ -79,11 +79,11 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 		$this->assertLessThan( $closing, $restore );
 	}
 
-	public function test_it_does_not_use_the_removed_wp_get_sites() {
+	public function test_it_does_not_use_the_deprecated_wp_get_sites() {
 		$this->assertStringNotContainsString(
 			'wp_get_sites',
 			$this->code(),
-			'wp_get_sites() was removed in WordPress 5.1 and fatals on multisite uninstall.'
+			'wp_get_sites() is capped at 100 sites, so a larger network uninstalls in part.'
 		);
 	}
 
