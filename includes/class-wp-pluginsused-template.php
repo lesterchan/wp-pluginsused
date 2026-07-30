@@ -295,18 +295,33 @@ class WP_PluginsUsed_Template {
 	 * @return string
 	 */
 	protected static function icon( $state ) {
-		$common = ' width="14" height="14" viewBox="0 0 16 16" role="img"';
+		/*
+		 * Written exactly as wp_kses() would leave it: attribute names
+		 * lowercased, and a space before the self-closing slash.
+		 *
+		 * That matters because there are two ways out of this class. The
+		 * shortcodes return their markup, while display_pluginsused() echoes it
+		 * through wp_kses(). Spelling this "viewBox" meant the two paths emitted
+		 * different bytes for the same icon -- kses lowercased it on the echoing
+		 * path only -- so a theme calling the template tag got markup the
+		 * shortcode never produced.
+		 *
+		 * Lowercase is safe: an HTML parser applies its SVG attribute
+		 * case-fixup table, so "viewbox" reaches the DOM as viewBox and the icon
+		 * scales. It is also what the echoing path has always shipped.
+		 */
+		$common = ' width="14" height="14" viewbox="0 0 16 16" role="img"';
 
 		if ( 'active' === $state ) {
 			return '<svg class="wp-pluginsused-icon wp-pluginsused-icon-active"' . $common
 				. ' aria-label="' . esc_attr__( 'Active plugin', 'wp-pluginsused' ) . '">'
-				. '<path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 10.2L3.6 7.7l1.3-1.3 2.2 2.2 4.1-4.1 1.3 1.3-5.4 5.4Z"/>'
+				. '<path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 10.2L3.6 7.7l1.3-1.3 2.2 2.2 4.1-4.1 1.3 1.3-5.4 5.4Z" />'
 				. '</svg>';
 		}
 
 		return '<svg class="wp-pluginsused-icon wp-pluginsused-icon-inactive"' . $common
 			. ' aria-label="' . esc_attr__( 'Inactive plugin', 'wp-pluginsused' ) . '">'
-			. '<circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55"/>'
+			. '<circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55" />'
 			. '</svg>';
 	}
 }

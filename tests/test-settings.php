@@ -117,7 +117,14 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		$html = $this->render();
 
 		$this->assertStringContainsString( 'action="options.php"', $html, 'The form must post to the Settings API endpoint.' );
-		$this->assertStringContainsString( 'value="wp_pluginsused_options"', $html, 'settings_fields() must name the registered group.' );
+		// settings_fields() quotes option_page with single quotes, so the needle
+		// is quote-agnostic rather than assuming core's style, which is not part
+		// of any contract.
+		$this->assertMatchesRegularExpression(
+			'/name=.option_page.\s+value=.wp_pluginsused_options./',
+			$html,
+			'settings_fields() must name the registered group.'
+		);
 		$this->assertStringContainsString( '_wpnonce', $html, 'settings_fields() must emit its nonce.' );
 	}
 
