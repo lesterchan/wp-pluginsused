@@ -99,7 +99,7 @@ settings screen.
 ## Changelog
 
 ### 2.0.0
-* BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4. A site below either will not be offered this update.
+* BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4.
 * BREAKING: Renamed all three filters: `pluginsused_show_version`, `pluginsused_hidden_plugins` and `pluginsused_plugins_used` are now `wp_pluginsused_show_version`, `wp_pluginsused_hidden_plugins` and `wp_pluginsused_plugins_used`. The old names were dropped outright rather than deprecated, so code still using them stops being called.
 * BREAKING: Dropped the `PLUGINSUSED_SHOW_VERSION` constant and the `$pluginsused_hidden_plugins` global, the pre-2.0.0 ways of configuring the plugin by editing its own file. Use the settings screen.
 * NEW: Added a settings screen at `Settings -> WP-PluginsUsed`. Version numbers and hidden plugins were previously configurable only by editing `wp-pluginsused.php`, which every plugin update silently reverted.
@@ -119,22 +119,19 @@ settings screen.
 ## Upgrade Notice
 
 ### 2.0.0
-The first update since 1.50, and five things are worth knowing before you take it.
 
-**Your site needs WordPress 6.8 or later and PHP 8.2 or later.** Below either of those you will not be offered the update at all, and will stay on 1.50 indefinitely. Check `WP-Admin -> Tools -> Site Health -> Info -> Server` for your PHP version; if it is below 8.2, ask your host to move you up. PHP 8.1 and everything before it stopped receiving security fixes.
+Requires WordPress 6.8 and PHP 8.2.
 
-**The three filters have been renamed, and the old names now do nothing at all.** If you or whoever built your site added code to change how this plugin behaves, it needs one edit:
+**Security fix.** Up to 1.50 the plugin printed plugin names, authors and links with only their HTML tags stripped, which leaves quotes intact, so a plugin whose name or description contained a double quote could break out and put a working script into any page carrying one of the shortcodes. Every value is now escaped properly.
+
+**The three filters are renamed, and the old names do nothing at all:**
 
 * `pluginsused_show_version` is now `wp_pluginsused_show_version`
 * `pluginsused_hidden_plugins` is now `wp_pluginsused_hidden_plugins`
 * `pluginsused_plugins_used` is now `wp_pluginsused_plugins_used`
 
-Look in your theme's `functions.php`, in any site-specific or "code snippets" plugin, and in anything in `wp-content/mu-plugins`. Search those files for `pluginsused_` and put `wp_` in front of each of the three names above. Nothing else about them changed — same arguments, same return value, same place in the page.
+Same arguments, same return value, same place in the page. This one fails silently: nothing errors, the plugin simply stops asking your code what it thinks. The symptom is version numbers you had switched off coming back, or a plugin you had hidden reappearing, days after an update nobody connects it to. Search your theme's `functions.php`, any snippets plugin and `wp-content/mu-plugins` for `pluginsused_`.
 
-This is the one to be careful about, because it fails silently. Your site will not break and no error will appear; the plugin simply stops asking your code what it thinks. The symptom is version numbers you had switched off coming back, or a plugin you had hidden reappearing in the list, a few days after an update nobody connects it to. If none of that means anything to you, you almost certainly have no such code and nothing to do.
+**Configuration moved from the plugin file to a settings screen.** 1.50 was configured by editing `wp-pluginsused.php` itself, so every plugin update wiped the changes. Neither escape route is read any more: the `PLUGINSUSED_SHOW_VERSION` constant, often parked in `wp-config.php`, and the `$pluginsused_hidden_plugins` global. Set both at `WP-Admin -> Settings -> WP-PluginsUsed`.
 
-**Anything you configured by editing the plugin's own file now has a settings screen — and has to be set there.** 1.50 was configured by editing `wp-pluginsused.php` itself, so your changes were wiped by every plugin update anyway. Two of those edits sometimes got moved somewhere safer, and neither is read any more: the `PLUGINSUSED_SHOW_VERSION` constant, often parked in `wp-config.php`, and the `$pluginsused_hidden_plugins` global. Go to `WP-Admin -> Settings -> WP-PluginsUsed`, untick **Show each plugin's version number next to its name** if that is what the constant was doing, and tick the plugins you want left out of the list. Set once, and updates stop undoing it.
-
-**Update for the security fix even if none of the above applies to you.** Up to 1.50 the plugin printed plugin names, authors and links into the page with only their HTML tags stripped, which leaves quotes intact. A plugin whose name or description contained a double quote could break out and put a working script into any page carrying one of the shortcodes. Every value is now escaped properly.
-
-**Two smaller things.** The plugin now stores two rows in your database, `wp_pluginsused_options` and `wp_pluginsused_version`; deleting the plugin from the Plugins screen removes both. And the summary sentence ("There are 12 plugins used: 9 active plugins and 3 inactive plugins") was rewritten so its bold formatting is no longer part of the translated text — on a non-English site those three phrases fall back to English until translate.wordpress.org catches up. The shortcodes, `display_pluginsused()` and the older function names are all unchanged.
+**Smaller changes.** The plugin stores `wp_pluginsused_options` and `wp_pluginsused_version`; deleting it from the Plugins screen removes both. The summary sentence was rewritten so its bold formatting is no longer part of the translated string, so on a non-English site those phrases fall back to English until translate.wordpress.org catches up. The shortcodes, `display_pluginsused()` and the older function names are unchanged.
