@@ -116,33 +116,6 @@ settings screen.
 * FIXED: `uninstall.php` no longer stops at the hundredth site on multisite, and restores each site inside the loop.
 * NOTE: The three phrases making up the summary sentence were reworded so their bold markup is no longer part of the translated text. Existing translations of those three fall back to English until they are retranslated.
 
-### 1.50.2
-* FIXED: Remove create_function
-
-### 1.50 (01-06-2009)
-* NEW: Use _n() Instead Of __ngettext() And _n_noop() Instead Of __ngettext_noop()
-* NEW: Hide Plugins
-
-### 1.40 (12-12-2008)
-* NEW: Works For WordPress 2.6 Only
-* NEW: Better Translation Using __ngetext() by Anna Ozeritskaya
-* NEW: Right To Left Language Support by Kambiz R. Khojasteh
-* NEW: Uses number_format_i18n()
-
-### 1.31 (16-07-2008)
-* NEW: Works For WordPress 2.6
-
-### 1.30 (01-06-2008)
-* NEW: Works With WordPress 2.5 Only
-* NEW: Uses ShortCode API
-* NEW: Uses /wp-pluginsused/ Folder Instead Of /pluginsused/
-* NEW: Uses wp-pluginsused.php Instead Of pluginsused.php
-* NEW: Added Option To Hide Plugins Version Number
-* FIXED: Strip Away HTML Codes In Plugin Descriptions
-
-### 1.00 (01-10-2007)
-* NEW: Initial Release
-
 ## Upgrade Notice
 
 ### 2.0.0
