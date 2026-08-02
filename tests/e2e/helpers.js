@@ -382,7 +382,7 @@ function createShortcodePost( requestUtils, content, title ) {
 async function openSettings( page ) {
 	await page.goto( SETTINGS_URL );
 
-	await expect( page.getByRole( 'heading', { name: 'Plugins Used' } ) ).toBeVisible();
+	await expect( page.getByRole( 'heading', { name: 'Plugins Used Settings' } ) ).toBeVisible();
 }
 
 /**

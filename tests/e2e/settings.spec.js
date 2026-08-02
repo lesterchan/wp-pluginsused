@@ -241,7 +241,7 @@ test.describe( 'The settings screen', () => {
 		await expect( row ).toHaveCount( 1 );
 		await row.getByRole( 'link', { name: 'Settings' } ).click();
 
-		await expect( page.getByRole( 'heading', { name: 'Plugins Used' } ) ).toBeVisible();
+		await expect( page.getByRole( 'heading', { name: 'Plugins Used Settings' } ) ).toBeVisible();
 	} );
 
 	test( 'a subscriber gets neither the menu item nor the screen, and an administrator gets both', async ( {
@@ -290,7 +290,7 @@ test.describe( 'The settings screen', () => {
 			await expect( subscriber.locator( '#adminmenu' ) ).toContainText( 'WP-PluginsUsed' );
 
 			await subscriber.goto( SETTINGS_URL );
-			await expect( subscriber.getByRole( 'heading', { name: 'Plugins Used' } ) ).toBeVisible();
+			await expect( subscriber.getByRole( 'heading', { name: 'Plugins Used Settings' } ) ).toBeVisible();
 
 			// The form itself, not just the wrapper: render_page() returns
 			// early on a failed capability check, which would leave the heading

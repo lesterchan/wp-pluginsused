@@ -122,7 +122,7 @@ class WP_PluginsUsed_Settings {
 	 */
 	public static function add_page() {
 		add_options_page(
-			__( 'WP-PluginsUsed', 'wp-pluginsused' ),
+			__( 'Plugins Used Settings', 'wp-pluginsused' ),
 			__( 'WP-PluginsUsed', 'wp-pluginsused' ),
 			self::capability(),
 			self::PAGE,
@@ -277,7 +277,7 @@ class WP_PluginsUsed_Settings {
 		}
 
 		echo '<div class="wrap">';
-		printf( '<h1>%s</h1>', esc_html__( 'Plugins Used', 'wp-pluginsused' ) );
+		printf( '<h1>%s</h1>', esc_html__( 'Plugins Used Settings', 'wp-pluginsused' ) );
 
 		printf(
 			'<p>%s</p>',
