@@ -119,6 +119,48 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 		$this->assertFalse( get_option( 'pluginsused_options' ), 'The old row still goes.' );
 	}
 
+	/**
+	 * The same fold, on the path every real update takes.
+	 *
+	 * Activation hooks do not fire when a plugin is updated, so a site that
+	 * updates through the Plugins screen reaches the migration through admin_init
+	 * -- and register_settings() is hooked to admin_init first, so by then
+	 * register_setting()'s `default` has installed a default_option filter and a
+	 * bare get_option() answers with the defaults array rather than false. The
+	 * "there is no current row yet" branch was therefore never taken, while the
+	 * delete a few lines below ran regardless: the hidden-plugins list was read
+	 * and thrown away.
+	 *
+	 * Every test above passes on that bug, because none of them registers the
+	 * setting first -- which is the same thing as saying they all test WP-CLI.
+	 */
+	public function test_the_migration_folds_the_row_in_on_the_admin_path_too() {
+		delete_option( 'wp_pluginsused_options' );
+		update_option(
+			'pluginsused_options',
+			array(
+				'show_version'   => false,
+				'hidden_plugins' => array( 'Alpha Test Plugin' ),
+			)
+		);
+
+		WP_PluginsUsed_Settings::register_settings();
+		WP_PluginsUsed_Options::maybe_upgrade();
+
+		$stored = get_option( 'wp_pluginsused_options', false );
+
+		$this->assertIsArray( $stored, 'The migration wrote no settings row at all.' );
+		$this->assertSame(
+			array( 'Alpha Test Plugin' ),
+			$stored['hidden_plugins'],
+			'The hidden list has to survive an update as well as a reactivation.'
+		);
+		$this->assertFalse(
+			get_option( 'pluginsused_options' ),
+			'The old row is gone, so whatever the fold missed is gone with it.'
+		);
+	}
+
 	public function test_the_markers_read_back_as_empty_strings_before_the_first_upgrade() {
 		delete_option( 'wp_pluginsused_version' );
 

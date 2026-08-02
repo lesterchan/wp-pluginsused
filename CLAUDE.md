@@ -27,6 +27,24 @@ global; neither is read any more.
 
 ## Traps
 
+* **`migrate()` asks `get_option( self::OPTION, false )`, and the second argument
+  is load-bearing.** `register_setting()` is passed a `default`, which installs a
+  `default_option_wp_pluginsused_options` filter, and `maybe_upgrade()` is hooked
+  to `admin_init` *after* `register_settings()` — so a bare `get_option()` answers
+  with the defaults array and never with `false`. The "there is no current row
+  yet" branch was therefore never taken on the admin path, while the
+  `delete_option()` below it ran regardless: the owner's hidden-plugins list was
+  read and thrown away. Passing an explicit default defeats the registered one,
+  because `filter_default_option()` returns early when a default was passed.
+
+  **Activation and WP-CLI never run `register_setting()`**, so reactivating
+  repaired it and every test that went through activation passed. That is the
+  whole reason it survived: a migration test that does not register the setting
+  first is testing WP-CLI.
+  `test_the_migration_folds_the_row_in_on_the_admin_path_too` is the one that
+  registers it. wp-print had the same defect in a different shape, and
+  freemyinternet, wp-commentnavi and wp-pagenavi carry the identical `migrate()`
+  and were one `'default'` away from it.
 * **Plugin headers are attacker-controlled** for anyone who can drop a file in
   `wp-content/plugins`, and up to 1.50 the plugin only stripped tags — which
   leaves quotes intact, so a name containing `"` broke out of a `title=`
