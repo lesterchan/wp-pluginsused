@@ -16,7 +16,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		wp_set_current_user( $this->create_admin() );
 
 		/*
 		 * The plugin's own callbacks, invoked directly rather than by firing
