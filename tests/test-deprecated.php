@@ -24,14 +24,15 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		$data = get_pluginsused_data( WP_PLUGIN_DIR . '/zzz-alpha/zzz-alpha.php' );
 
-		$this->assertSame( 'Alpha Test Plugin', $data['Plugin_Name'] );
-		$this->assertSame( 'https://example.com/alpha', $data['Plugin_URI'] );
-		$this->assertSame( 'Alpha Author', $data['Author'] );
-		$this->assertSame( 'https://example.com/authora', $data['Author_URI'] );
-		$this->assertSame( '1.2.3', $data['Version'] );
+		$this->assertSame( 'Alpha Test Plugin', $data['Plugin_Name'], 'The legacy field name is kept, since a theme reading it would break.' );
+		$this->assertSame( 'https://example.com/alpha', $data['Plugin_URI'], 'And the URI field.' );
+		$this->assertSame( 'Alpha Author', $data['Author'], 'And the author field.' );
+		$this->assertSame( 'https://example.com/authora', $data['Author_URI'], 'And the author URI field.' );
+		$this->assertSame( '1.2.3', $data['Version'], 'And the version field.' );
 		$this->assertSame(
 			array( 'Plugin_Name', 'Plugin_URI', 'Description', 'Author', 'Author_URI', 'Version' ),
-			array_keys( $data )
+			array_keys( $data ),
+			'And the whole shape, in order, since a theme may walk it.'
 		);
 	}
 
@@ -41,7 +42,7 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 		$plugins = get_pluginsused();
 
 		$this->assertArrayHasKey( 'zzz-alpha/zzz-alpha.php', $plugins, 'get_pluginsused() is keyed by plugin file, as the old global was.' );
-		$this->assertSame( 'Alpha Test Plugin', $plugins['zzz-alpha/zzz-alpha.php']['Plugin_Name'] );
+		$this->assertSame( 'Alpha Test Plugin', $plugins['zzz-alpha/zzz-alpha.php']['Plugin_Name'], 'The array is keyed by plugin file, as the released global was.' );
 	}
 
 	public function test_pluginsused_sort_orders_by_name() {
@@ -77,8 +78,8 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', $html );
-		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $html );
+		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', $html, 'The deprecated renderer still produces an entry.' );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $html, 'Carrying the same icon the current template does.' );
 	}
 
 	/**
@@ -90,8 +91,8 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		$first = get_pluginsused();
 
-		$this->assertSame( $first, $GLOBALS['wp_plugins'] );
-		$this->assertSame( $first, get_pluginsused() );
+		$this->assertSame( $first, $GLOBALS['wp_plugins'], 'The result is cached into the legacy global, which a theme may read directly.' );
+		$this->assertSame( $first, get_pluginsused(), 'And the second call answers from it rather than rebuilding.' );
 	}
 
 	public function test_process_pluginsused_matches_the_template_class() {
@@ -99,7 +100,7 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		process_pluginsused();
 
-		$this->assertSame( WP_PluginsUsed_Template::get_plugins_used(), $GLOBALS['plugins_used'] );
+		$this->assertSame( WP_PluginsUsed_Template::get_plugins_used(), $GLOBALS['plugins_used'], 'The deprecated wrapper and the class agree, so neither can drift.' );
 	}
 
 	/**
@@ -141,7 +142,7 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		$found = $this->find_injections( $html );
 
-		$this->assertSame( array(), $found['handlers'] );
-		$this->assertSame( array(), $found['schemes'] );
+		$this->assertSame( array(), $found['handlers'], 'The deprecated renderer emits no event handler from a hostile field.' );
+		$this->assertSame( array(), $found['schemes'], 'And no javascript URI.' );
 	}
 }

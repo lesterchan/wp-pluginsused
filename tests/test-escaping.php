@@ -37,7 +37,7 @@ class WP_PluginsUsed_Escaping_Test extends WP_PluginsUsed_TestCase {
 	public function test_no_javascript_url_reaches_the_dom() {
 		$found = $this->find_injections( $this->markup() );
 
-		$this->assertSame( array(), $found['schemes'] );
+		$this->assertSame( array(), $found['schemes'], 'No javascript URI reaches the DOM from any plugin field.' );
 	}
 
 	public function test_markup_is_well_formed() {
@@ -50,7 +50,8 @@ class WP_PluginsUsed_Escaping_Test extends WP_PluginsUsed_TestCase {
 					return trim( $error->message );
 				},
 				$parsed['errors']
-			)
+			),
+			'The markup parses without error, so the escaping did not break the document.'
 		);
 	}
 
@@ -60,19 +61,19 @@ class WP_PluginsUsed_Escaping_Test extends WP_PluginsUsed_TestCase {
 	public function test_hostile_name_is_displayed_as_literal_text() {
 		$parsed = $this->parse_html( $this->markup() );
 
-		$this->assertStringContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent );
+		$this->assertStringContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent, 'A hostile plugin name is displayed as text rather than becoming an attribute.' );
 	}
 
 	public function test_hostile_author_is_displayed_as_literal_text() {
 		$parsed = $this->parse_html( $this->markup() );
 
-		$this->assertStringContainsString( 'Bad" autofocus="x', $parsed['doc']->textContent );
+		$this->assertStringContainsString( 'Bad" autofocus="x', $parsed['doc']->textContent, 'A hostile author is displayed as text too.' );
 	}
 
 	public function test_ampersand_in_description_round_trips() {
 		$parsed = $this->parse_html( $this->markup() );
 
-		$this->assertStringContainsString( 'Desc with & ampersand', $parsed['doc']->textContent );
+		$this->assertStringContainsString( 'Desc with & ampersand', $parsed['doc']->textContent, 'An ampersand in the description survives to the page as an ampersand.' );
 	}
 
 	/**
@@ -80,8 +81,8 @@ class WP_PluginsUsed_Escaping_Test extends WP_PluginsUsed_TestCase {
 	 * esc_attr() passes $double_encode = false precisely so it does not.
 	 */
 	public function test_entities_are_not_double_encoded() {
-		$this->assertStringNotContainsString( '&amp;amp;', $this->markup() );
-		$this->assertStringNotContainsString( '&amp;quot;', $this->markup() );
+		$this->assertStringNotContainsString( '&amp;amp;', $this->markup(), 'No ampersand is encoded twice.' );
+		$this->assertStringNotContainsString( '&amp;quot;', $this->markup(), 'And no quote, which is what a second escaping pass would leave.' );
 	}
 
 	public function test_a_script_tag_in_a_header_is_stripped() {

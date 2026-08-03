@@ -16,7 +16,7 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 		$options = WP_PluginsUsed_Options::get();
 
 		$this->assertTrue( $options['show_version'], 'With no stored row, show_version takes its shipped default of on.' );
-		$this->assertSame( array(), $options['hidden_plugins'] );
+		$this->assertSame( array(), $options['hidden_plugins'], 'With no row stored, nothing is hidden.' );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 
 		WP_PluginsUsed_Options::maybe_upgrade();
 
-		$this->assertSame( array( 'Kept' ), get_option( 'wp_pluginsused_options' )['hidden_plugins'] );
+		$this->assertSame( array( 'Kept' ), get_option( 'wp_pluginsused_options' )['hidden_plugins'], 'An existing prefixed row wins; the migration does not overwrite what is there.' );
 		$this->assertFalse( get_option( 'pluginsused_options' ), 'The old row still goes.' );
 	}
 
@@ -182,7 +182,8 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 				'plugin' => '',
 				'db'     => '',
 			),
-			WP_PluginsUsed_Options::get_versions()
+			WP_PluginsUsed_Options::get_versions(),
+			'A corrupt version row reads as empty markers rather than propagating.'
 		);
 	}
 
@@ -201,13 +202,13 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 		$options = WP_PluginsUsed_Options::get();
 
 		$this->assertTrue( $options['show_version'], 'A scalar where an array belongs falls back to the defaults.' );
-		$this->assertSame( array(), $options['hidden_plugins'] );
+		$this->assertSame( array(), $options['hidden_plugins'], 'A scalar where an array belongs falls back to the defaults.' );
 	}
 
 	public function test_non_array_hidden_plugins_is_coerced() {
 		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => 'nope' ) );
 
-		$this->assertSame( array(), WP_PluginsUsed_Options::get()['hidden_plugins'] );
+		$this->assertSame( array(), WP_PluginsUsed_Options::get()['hidden_plugins'], 'A non-array hidden list is coerced to an empty one rather than iterated.' );
 	}
 
 	public function test_stored_show_version_is_honoured() {
@@ -272,16 +273,16 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 		};
 
 		add_filter( 'wp_pluginsused_hidden_plugins', $callback );
-		$this->assertContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins() );
+		$this->assertContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins(), 'A filter can add to the hidden list.' );
 
 		remove_filter( 'wp_pluginsused_hidden_plugins', $callback );
-		$this->assertNotContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins() );
+		$this->assertNotContains( 'beta Test Plugin', WP_PluginsUsed_Options::hidden_plugins(), 'And removing the filter takes it back out.' );
 	}
 
 	public function test_hidden_plugins_filter_returning_a_non_array_is_survivable() {
 		add_filter( 'wp_pluginsused_hidden_plugins', '__return_false' );
 
-		$this->assertSame( array(), WP_PluginsUsed_Options::hidden_plugins() );
+		$this->assertSame( array(), WP_PluginsUsed_Options::hidden_plugins(), 'A filter returning a non-array is answered with an empty list rather than fatal.' );
 
 		remove_filter( 'wp_pluginsused_hidden_plugins', '__return_false' );
 	}
@@ -295,19 +296,19 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 		);
 
 		$this->assertTrue( $clean['show_version'], 'A ticked checkbox normalises to true.' );
-		$this->assertSame( array( 'One', 'Two' ), $clean['hidden_plugins'] );
+		$this->assertSame( array( 'One', 'Two' ), $clean['hidden_plugins'], 'The submitted list is normalised to the values that were ticked.' );
 	}
 
 	public function test_sanitize_treats_an_absent_checkbox_as_false() {
 		$clean = WP_PluginsUsed_Options::sanitize( array() );
 
 		$this->assertFalse( $clean['show_version'], 'An absent checkbox normalises to false rather than being left out.' );
-		$this->assertSame( array(), $clean['hidden_plugins'] );
+		$this->assertSame( array(), $clean['hidden_plugins'], 'An absent checkbox clears the list rather than leaving it as it was.' );
 	}
 
 	public function test_sanitize_rejects_non_array_input() {
 		$clean = WP_PluginsUsed_Options::sanitize( 'garbage' );
 
-		$this->assertSame( array_keys( WP_PluginsUsed_Options::defaults() ), array_keys( $clean ) );
+		$this->assertSame( array_keys( WP_PluginsUsed_Options::defaults() ), array_keys( $clean ), 'A non-array is answered with the full default shape, so no key is missing.' );
 	}
 }

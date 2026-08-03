@@ -26,11 +26,11 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$active   = WP_PluginsUsed_Template::render( 'active' );
 		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
-		$this->assertStringContainsString( 'Alpha Test Plugin', $active );
-		$this->assertStringNotContainsString( 'Alpha Test Plugin', $inactive );
+		$this->assertStringContainsString( 'Alpha Test Plugin', $active, 'An active plugin is in the active listing.' );
+		$this->assertStringNotContainsString( 'Alpha Test Plugin', $inactive, 'And not in the inactive one.' );
 
-		$this->assertStringContainsString( 'beta Test Plugin', $inactive );
-		$this->assertStringNotContainsString( 'beta Test Plugin', $active );
+		$this->assertStringContainsString( 'beta Test Plugin', $inactive, 'An inactive plugin is in the inactive listing.' );
+		$this->assertStringNotContainsString( 'beta Test Plugin', $active, 'And not in the active one, so the split is exclusive.' );
 	}
 
 	/**
@@ -42,8 +42,8 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		update_site_option( 'active_sitewide_plugins', array( 'zzz-alpha/zzz-alpha.php' => time() ) );
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ) );
-		$this->assertStringNotContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ), 'A network-activated plugin counts as active on the site.' );
+		$this->assertStringNotContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ), 'Rather than appearing in both listings.' );
 
 		delete_site_option( 'active_sitewide_plugins' );
 	}
@@ -69,13 +69,13 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$active   = count( $used['active'] );
 		$inactive = count( $used['inactive'] );
 
-		$this->assertStringContainsString( '<strong>' . number_format_i18n( $active + $inactive ) . '</strong>', $stats );
-		$this->assertStringContainsString( '<strong>' . number_format_i18n( $active ) . ' active plugin', $stats );
-		$this->assertStringContainsString( '<strong>' . number_format_i18n( $inactive ) . ' inactive plugin', $stats );
+		$this->assertStringContainsString( '<strong>' . number_format_i18n( $active + $inactive ) . '</strong>', $stats, 'The stats total is the two listings added together.' );
+		$this->assertStringContainsString( '<strong>' . number_format_i18n( $active ) . ' active plugin', $stats, 'The active count matches the active listing.' );
+		$this->assertStringContainsString( '<strong>' . number_format_i18n( $inactive ) . ' inactive plugin', $stats, 'And the inactive count matches the inactive listing.' );
 	}
 
 	public function test_version_is_appended_by_default() {
-		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin 1.2.3', WP_PluginsUsed_Template::render( 'active' ), 'The version is appended by default.' );
 	}
 
 	public function test_version_is_suppressed_when_disabled() {
@@ -84,7 +84,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 
 		$active = WP_PluginsUsed_Template::render( 'active' );
 
-		$this->assertStringNotContainsString( '1.2.3', $active );
+		$this->assertStringNotContainsString( '1.2.3', $active, 'And suppressed entirely when the setting is off.' );
 		$this->assertStringContainsString( 'Alpha Test Plugin', $active, 'The name must survive.' );
 	}
 
@@ -99,11 +99,12 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$new_total = count( $after['active'] ) + count( $after['inactive'] );
 		$markup    = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 
-		$this->assertStringNotContainsString( 'Hidden Test Plugin', $markup );
+		$this->assertStringNotContainsString( 'Hidden Test Plugin', $markup, 'A hidden plugin is out of the listing.' );
 		$this->assertSame( $total - 1, $new_total, 'A hidden plugin must leave the counts too.' );
 		$this->assertStringContainsString(
 			'<strong>' . number_format_i18n( $new_total ) . '</strong>',
-			WP_PluginsUsed_Template::render( 'stats' )
+			WP_PluginsUsed_Template::render( 'stats' ),
+			'And out of the counts, so the two cannot disagree.'
 		);
 	}
 
@@ -116,7 +117,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		add_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ), 'A filter can empty the listing, so it really decides what is rendered.' );
 
 		remove_filter( 'wp_pluginsused_plugins_used', $callback );
 	}
@@ -124,7 +125,8 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 	public function test_unknown_type_renders_the_inactive_listing() {
 		$this->assertSame(
 			WP_PluginsUsed_Template::render( 'inactive' ),
-			WP_PluginsUsed_Template::render( 'anything-else' )
+			WP_PluginsUsed_Template::render( 'anything-else' ),
+			'An unknown type falls back to the inactive listing rather than rendering nothing.'
 		);
 	}
 
@@ -133,7 +135,8 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 
 		$this->assertSame(
 			count( $used['active'] ),
-			substr_count( WP_PluginsUsed_Template::render( 'active' ), '<p>' )
+			substr_count( WP_PluginsUsed_Template::render( 'active' ), '<p>' ),
+			'One paragraph per entry, so a theme can style them individually.'
 		);
 	}
 
@@ -141,9 +144,9 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$active   = WP_PluginsUsed_Template::render( 'active' );
 		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
-		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $active );
-		$this->assertStringContainsString( 'wp-pluginsused-icon-inactive', $inactive );
-		$this->assertStringNotContainsString( 'wp-pluginsused-icon-inactive', $active );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-active', $active, 'The active listing uses the active icon.' );
+		$this->assertStringContainsString( 'wp-pluginsused-icon-inactive', $inactive, 'The inactive listing uses the inactive one.' );
+		$this->assertStringNotContainsString( 'wp-pluginsused-icon-inactive', $active, 'And the two never appear together.' );
 	}
 
 	/**
@@ -152,21 +155,21 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 	public function test_no_image_requests_are_emitted() {
 		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 
-		$this->assertStringNotContainsString( '<img', $markup );
-		$this->assertStringNotContainsString( '.gif', $markup );
+		$this->assertStringNotContainsString( '<img', $markup, 'No image is requested; the icons are inline SVG.' );
+		$this->assertStringNotContainsString( '.gif', $markup, 'And no raster file is referenced either.' );
 	}
 
 	public function test_empty_plugin_uri_does_not_emit_an_empty_anchor() {
 		// The evil fixture's javascript: URI is dropped by esc_url(), leaving nothing to link to.
 		$markup = WP_PluginsUsed_Template::render( 'active' );
 
-		$this->assertStringNotContainsString( 'href=""', $markup );
+		$this->assertStringNotContainsString( 'href=""', $markup, 'A plugin with no URI renders no empty anchor.' );
 	}
 
 	public function test_description_text_survives_rendering() {
 		$parsed = $this->parse_html( WP_PluginsUsed_Template::render( 'active' ) );
 
-		$this->assertStringContainsString( 'A plain description.', $parsed['doc']->textContent );
+		$this->assertStringContainsString( 'A plain description.', $parsed['doc']->textContent, 'The description reaches the page as text.' );
 	}
 
 	/**
@@ -177,7 +180,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		update_option( 'wp_pluginsused_options', array( 'hidden_plugins' => array( 'Alpha' ) ) );
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( 'Alpha Test Plugin', WP_PluginsUsed_Template::render( 'active' ), 'Hiding matches the whole name, so a substring does not hide a sibling.' );
 	}
 
 	/**
@@ -188,7 +191,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringContainsString( '>Alpha Test Plugin</a>', WP_PluginsUsed_Template::render( 'active' ) );
+		$this->assertStringContainsString( '>Alpha Test Plugin</a>', WP_PluginsUsed_Template::render( 'active' ), 'With the version suppressed the name has no trailing space left behind.' );
 	}
 
 	public function test_missing_author_uri_renders_no_url_link() {
@@ -203,9 +206,9 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'Someone', $html );
-		$this->assertStringNotContainsString( '(<a', $html );
-		$this->assertStringNotContainsString( 'href=""', $html );
+		$this->assertStringContainsString( 'Someone', $html, 'An author with no URI is still named.' );
+		$this->assertStringNotContainsString( '(<a', $html, 'Just not linked.' );
+		$this->assertStringNotContainsString( 'href=""', $html, 'And no empty anchor is emitted in place of the link.' );
 	}
 
 	public function test_missing_plugin_uri_renders_the_name_as_plain_text() {
@@ -220,8 +223,8 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( '<strong>No Plugin URI 1.0</strong>', $html );
-		$this->assertStringNotContainsString( 'href=""', $html );
+		$this->assertStringContainsString( '<strong>No Plugin URI 1.0</strong>', $html, 'A plugin with no URI is rendered as plain text.' );
+		$this->assertStringNotContainsString( 'href=""', $html, 'Rather than as an anchor to nowhere.' );
 	}
 
 	/**
@@ -239,7 +242,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		}
 
 		$this->assertNotNull( $evil, 'The description is rendered, or the texturize assertion below is vacuous.' );
-		$this->assertStringContainsString( '&#8220;quotes&#8221;', $evil['Description'] );
+		$this->assertStringContainsString( '&#8220;quotes&#8221;', $evil['Description'], 'The description is texturised, so quotes render as the site writes them.' );
 	}
 
 	/**
@@ -262,18 +265,18 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$inactive = WP_PluginsUsed_Template::render( 'inactive' );
 
 		// Announced to assistive tech...
-		$this->assertStringContainsString( 'role="img"', $active );
-		$this->assertStringContainsString( 'aria-label="Active plugin"', $active );
-		$this->assertStringContainsString( 'aria-label="Inactive plugin"', $inactive );
+		$this->assertStringContainsString( 'role="img"', $active, 'The icon is exposed as an image to assistive technology.' );
+		$this->assertStringContainsString( 'aria-label="Active plugin"', $active, 'And labelled, so the state is not conveyed by colour alone.' );
+		$this->assertStringContainsString( 'aria-label="Inactive plugin"', $inactive, 'The inactive icon carries its own label.' );
 
 		// ...and distinguished by shape, not just hue.
-		$this->assertStringContainsString( '<path', $active );
-		$this->assertStringContainsString( '<circle', $inactive );
+		$this->assertStringContainsString( '<path', $active, 'The active icon is drawn as a path.' );
+		$this->assertStringContainsString( '<circle', $inactive, 'And the inactive one as a circle, so they differ in shape as well as colour.' );
 	}
 
 	public function test_icons_inherit_the_theme_colour() {
-		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'active' ) );
-		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'active' ), 'The active icon inherits the theme colour rather than hardcoding one.' );
+		$this->assertStringContainsString( 'currentColor', WP_PluginsUsed_Template::render( 'inactive' ), 'And the inactive one.' );
 	}
 
 	/**

@@ -34,7 +34,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 
 		$slugs = wp_list_pluck( $submenu['options-general.php'], 2 );
 
-		$this->assertContains( 'wp-pluginsused', $slugs );
+		$this->assertContains( 'wp-pluginsused', $slugs, 'The screen is registered under Settings, per the menu rule.' );
 	}
 
 	public function test_setting_is_registered_with_the_options_sanitizer() {
@@ -43,7 +43,8 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		$this->assertArrayHasKey( 'wp_pluginsused_options', $registered, 'The settings row is registered, so its sanitise callback is attached.' );
 		$this->assertSame(
 			array( 'WP_PluginsUsed_Options', 'sanitize' ),
-			$registered['wp_pluginsused_options']['sanitize_callback']
+			$registered['wp_pluginsused_options']['sanitize_callback'],
+			'The registration names the options sanitiser, so a save cannot bypass it.'
 		);
 	}
 
@@ -63,8 +64,8 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_the_sections_are_named_after_the_plugin() {
-		$this->assertSame( 'wp_pluginsused_display', WP_PluginsUsed_Settings::SECTION_DISPLAY );
-		$this->assertSame( 'wp_pluginsused_hidden', WP_PluginsUsed_Settings::SECTION_HIDDEN );
+		$this->assertSame( 'wp_pluginsused_display', WP_PluginsUsed_Settings::SECTION_DISPLAY, 'The display section is named after the plugin.' );
+		$this->assertSame( 'wp_pluginsused_hidden', WP_PluginsUsed_Settings::SECTION_HIDDEN, 'And the hidden section, so no other plugin can claim either.' );
 	}
 
 	/**
@@ -72,7 +73,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 	 * somebody other than an administrator in one place.
 	 */
 	public function test_the_capability_runs_through_the_filter() {
-		$this->assertSame( 'manage_options', WP_PluginsUsed_Settings::capability() );
+		$this->assertSame( 'manage_options', WP_PluginsUsed_Settings::capability(), 'The capability comes through the filter, which is what makes it overridable.' );
 
 		$callback = static function () {
 			return 'edit_posts';
@@ -131,23 +132,23 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 	public function test_both_inputs_are_present() {
 		$html = $this->render();
 
-		$this->assertStringContainsString( 'name="wp_pluginsused_options[show_version]"', $html );
-		$this->assertStringContainsString( 'name="wp_pluginsused_options[hidden_plugins][]"', $html );
+		$this->assertStringContainsString( 'name="wp_pluginsused_options[show_version]"', $html, 'The version toggle posts into the settings row.' );
+		$this->assertStringContainsString( 'name="wp_pluginsused_options[hidden_plugins][]"', $html, 'And the hidden list posts as an array under its own name.' );
 	}
 
 	public function test_hostile_plugin_name_is_escaped_in_the_checkbox_value() {
 		$html = $this->render();
 
-		$this->assertStringContainsString( 'value="Evil&quot; onmouseover=&quot;alert(1)"', $html );
+		$this->assertStringContainsString( 'value="Evil&quot; onmouseover=&quot;alert(1)"', $html, 'A hostile plugin name is escaped in the checkbox value.' );
 
 		$found = $this->find_injections( $html );
-		$this->assertSame( array(), $found['handlers'] );
+		$this->assertSame( array(), $found['handlers'], 'So it produces no event handler on the control.' );
 	}
 
 	public function test_render_is_capability_gated() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
 
-		$this->assertSame( '', $this->render() );
+		$this->assertSame( '', $this->render(), 'A reader without the capability gets nothing at all, not a partial screen.' );
 	}
 
 	/**
@@ -167,7 +168,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		$stored = get_option( 'wp_pluginsused_options' );
 
 		$this->assertTrue( $stored['show_version'], 'The saved form round-trips through the sanitiser to the stored row.' );
-		$this->assertSame( array( 'beta Test Plugin' ), $stored['hidden_plugins'] );
+		$this->assertSame( array( 'beta Test Plugin' ), $stored['hidden_plugins'], 'The saved form round-trips through the sanitiser to the stored row.' );
 	}
 
 	public function test_saved_setting_takes_effect_in_the_listing() {
@@ -180,7 +181,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		);
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertStringNotContainsString( 'beta Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertStringNotContainsString( 'beta Test Plugin', WP_PluginsUsed_Template::render( 'inactive' ), 'And the stored setting takes effect in the listing, which is the far end.' );
 	}
 
 	public function test_submitting_an_empty_form_clears_the_settings() {
@@ -197,7 +198,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		$stored = get_option( 'wp_pluginsused_options' );
 
 		$this->assertFalse( $stored['show_version'], 'An empty form clears the setting rather than leaving the old value.' );
-		$this->assertSame( array(), $stored['hidden_plugins'] );
+		$this->assertSame( array(), $stored['hidden_plugins'], 'An empty form clears the list rather than leaving the old values.' );
 	}
 
 	/**
@@ -216,13 +217,13 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertSame( array( $name ), get_option( 'wp_pluginsused_options' )['hidden_plugins'] );
+		$this->assertSame( array( $name ), get_option( 'wp_pluginsused_options' )['hidden_plugins'], 'A hostile name round-trips into storage as the name that was posted.' );
 
 		WP_PluginsUsed_Template::reset_cache();
 		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
 		$parsed = $this->parse_html( $markup );
 
-		$this->assertStringNotContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent );
+		$this->assertStringNotContainsString( 'Evil" onmouseover="alert(1)', $parsed['doc']->textContent, 'And still hides the plugin, so the escaping did not break the match.' );
 	}
 
 	public function test_an_unknown_setting_key_is_discarded_on_save() {
@@ -277,7 +278,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 	public function test_settings_page_markup_is_well_formed() {
 		$parsed = $this->parse_html( $this->render() );
 
-		$this->assertSame( array(), $parsed['errors'] );
+		$this->assertSame( array(), $parsed['errors'], 'The settings screen markup parses without error.' );
 	}
 
 	public function test_a_settings_link_is_added_to_the_plugins_row() {
@@ -286,6 +287,6 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 			array( 'deactivate' => 'x' )
 		);
 
-		$this->assertStringContainsString( 'page=wp-pluginsused', $links[0] );
+		$this->assertStringContainsString( 'page=wp-pluginsused', $links[0], 'The Settings link on the plugins row points at this screen.' );
 	}
 }

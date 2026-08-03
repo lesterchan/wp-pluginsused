@@ -60,7 +60,8 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 
 		$this->assertSame(
 			array( 'index.php', 'uninstall.php', 'wp-pluginsused.php' ),
-			$root
+			$root,
+			'Only entry points live in the root; everything else is in a subdirectory.'
 		);
 	}
 
@@ -78,19 +79,20 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 			array( 'Version' => 'Version' )
 		);
 
-		$this->assertSame( $header['Version'], WP_PLUGINSUSED_VERSION );
+		$this->assertSame( $header['Version'], WP_PLUGINSUSED_VERSION, 'The version constant matches the plugin header.' );
 	}
 
 	public function test_version_constant_matches_the_readme_stable_tag() {
 		preg_match( '/^Stable tag:\s*(\S+)/m', file_get_contents( dirname( __DIR__ ) . '/README.md' ), $m );
 
-		$this->assertSame( WP_PLUGINSUSED_VERSION, $m[1] );
+		$this->assertSame( WP_PLUGINSUSED_VERSION, $m[1], 'And the readme stable tag, so all three cannot drift apart.' );
 	}
 
 	public function test_main_file_constant_points_at_the_plugin() {
 		$this->assertSame(
 			realpath( dirname( __DIR__ ) . '/wp-pluginsused.php' ),
-			realpath( WP_PLUGINSUSED_MAIN_FILE )
+			realpath( WP_PLUGINSUSED_MAIN_FILE ),
+			'The main file constant resolves to the plugin file itself.'
 		);
 	}
 
@@ -102,7 +104,7 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_get_instance_is_a_singleton() {
-		$this->assertSame( WP_PluginsUsed::get_instance(), WP_PluginsUsed::get_instance() );
+		$this->assertSame( WP_PluginsUsed::get_instance(), WP_PluginsUsed::get_instance(), 'get_instance() hands back the same object rather than building a second.' );
 	}
 
 	/**
@@ -139,7 +141,8 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	public function test_no_textdomain_is_loaded_manually() {
 		$this->assertStringNotContainsString(
 			'load_plugin_textdomain',
-			wp_pluginsused_test_source_code()
+			wp_pluginsused_test_source_code(),
+			'No textdomain is loaded by hand; WordPress has done that since 4.6.'
 		);
 	}
 

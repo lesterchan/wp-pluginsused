@@ -119,13 +119,13 @@ class WP_PluginsUsed_Metadata_Test extends Plugin_Metadata_TestCase {
 	 * offer the later versions too.
 	 */
 	public function test_the_licence_block_is_the_or_later_variant() {
-		$this->assertSame( 'GPLv2 or later', $this->header_field( 'License' ) );
+		$this->assertSame( 'GPLv2 or later', $this->header_field( 'License' ), 'The header offers the later-version option.' );
 		$this->assertStringContainsString(
 			'either version 2 of the License, or',
 			$this->plugin_file(),
 			'A version-2-only block would contradict the header two lines above it.'
 		);
-		$this->assertStringContainsString( '(at your option) any later version.', $this->plugin_file() );
+		$this->assertStringContainsString( '(at your option) any later version.', $this->plugin_file(), 'And the licence comment offers it too, so the two cannot disagree.' );
 	}
 
 	/**
@@ -187,7 +187,7 @@ class WP_PluginsUsed_Metadata_Test extends Plugin_Metadata_TestCase {
 		$readme = (string) preg_replace( '/`[^`]*`/', '', $this->readme() );
 
 		$this->assertSame( 0, preg_match( '#http://#', $readme ), 'Every readme link must use https.' );
-		$this->assertSame( 0, preg_match( '#http://#', $this->plugin_file() ) );
-		$this->assertStringNotContainsString( 'forums.lesterchan.net', $readme );
+		$this->assertSame( 0, preg_match( '#http://#', $this->plugin_file() ), 'The plugin file links over https only.' );
+		$this->assertStringNotContainsString( 'forums.lesterchan.net', $readme, 'The retired support forum is not linked; it no longer exists.' );
 	}
 }

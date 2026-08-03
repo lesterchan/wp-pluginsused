@@ -51,29 +51,29 @@ class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 	public function test_one_plugin_uses_the_singular_form() {
 		$stats = $this->stats_for( 1, 0 );
 
-		$this->assertStringContainsString( 'There is <strong>1</strong> plugin used:', $stats );
-		$this->assertStringContainsString( '<strong>1 active plugin</strong>', $stats );
-		$this->assertStringNotContainsString( '1 active plugins', $stats );
+		$this->assertStringContainsString( 'There is <strong>1</strong> plugin used:', $stats, 'One plugin takes the singular in the total.' );
+		$this->assertStringContainsString( '<strong>1 active plugin</strong>', $stats, 'And in the active count.' );
+		$this->assertStringNotContainsString( '1 active plugins', $stats, 'With no plural left over, which is what a naive count produces.' );
 	}
 
 	public function test_one_inactive_plugin_uses_the_singular_form() {
-		$this->assertStringContainsString( '<strong>1 inactive plugin</strong>.', $this->stats_for( 0, 1 ) );
+		$this->assertStringContainsString( '<strong>1 inactive plugin</strong>.', $this->stats_for( 0, 1 ), 'One inactive plugin takes the singular too.' );
 	}
 
 	public function test_several_plugins_use_the_plural_form() {
 		$stats = $this->stats_for( 2, 3 );
 
-		$this->assertStringContainsString( 'There are <strong>5</strong> plugins used:', $stats );
-		$this->assertStringContainsString( '<strong>2 active plugins</strong>', $stats );
-		$this->assertStringContainsString( '<strong>3 inactive plugins</strong>.', $stats );
+		$this->assertStringContainsString( 'There are <strong>5</strong> plugins used:', $stats, 'More than one takes the plural in the total.' );
+		$this->assertStringContainsString( '<strong>2 active plugins</strong>', $stats, 'And in the active count.' );
+		$this->assertStringContainsString( '<strong>3 inactive plugins</strong>.', $stats, 'And the inactive count.' );
 	}
 
 	public function test_zero_plugins_renders_without_error() {
 		$stats = $this->stats_for( 0, 0 );
 
-		$this->assertStringContainsString( '<strong>0</strong>', $stats );
-		$this->assertStringContainsString( '<strong>0 active plugins</strong>', $stats );
-		$this->assertStringContainsString( '<strong>0 inactive plugins</strong>.', $stats );
+		$this->assertStringContainsString( '<strong>0</strong>', $stats, 'Zero renders rather than being treated as nothing to say.' );
+		$this->assertStringContainsString( '<strong>0 active plugins</strong>', $stats, 'Zero takes the plural in the active count.' );
+		$this->assertStringContainsString( '<strong>0 inactive plugins</strong>.', $stats, 'And the inactive count.' );
 	}
 
 	public function test_empty_listings_render_as_empty_strings() {
@@ -87,8 +87,8 @@ class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 		add_filter( 'wp_pluginsused_plugins_used', $callback );
 		WP_PluginsUsed_Template::reset_cache();
 
-		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ) );
-		$this->assertSame( '', WP_PluginsUsed_Template::render( 'inactive' ) );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'active' ), 'An empty active listing renders an empty string, not an empty wrapper.' );
+		$this->assertSame( '', WP_PluginsUsed_Template::render( 'inactive' ), 'And an empty inactive listing.' );
 
 		remove_filter( 'wp_pluginsused_plugins_used', $callback );
 	}
@@ -100,7 +100,7 @@ class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 	public function test_counts_are_formatted_for_the_locale() {
 		$stats = $this->stats_for( 1500, 0 );
 
-		$this->assertStringContainsString( '<strong>' . number_format_i18n( 1500 ) . '</strong>', $stats );
+		$this->assertStringContainsString( '<strong>' . number_format_i18n( 1500 ) . '</strong>', $stats, 'The count is localised, so a large number reads as the site would write it.' );
 	}
 
 	/**
@@ -110,6 +110,6 @@ class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 	public function test_stats_markup_is_well_formed() {
 		$parsed = $this->parse_html( $this->stats_for( 2, 3 ) );
 
-		$this->assertSame( array(), $parsed['errors'] );
+		$this->assertSame( array(), $parsed['errors'], 'The stats markup parses without error.' );
 	}
 }
