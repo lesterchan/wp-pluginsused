@@ -110,18 +110,57 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	/**
 	 * Every class carries the display name as its prefix, and its file is that
 	 * name lowercased with the underscores turned into hyphens.
+	 *
+	 * The classes are read back out of PHP rather than listed here. Against a
+	 * hardcoded list the prefix half compared two literals and could not fail,
+	 * and the file half only ever asked about the four names already typed --
+	 * so a fifth class, prefixed or not, was invisible to both. Asking PHP
+	 * which classes this plugin declared is what makes either half bite.
 	 */
 	public function test_every_class_is_named_after_the_plugin_and_lives_in_a_matching_file() {
-		foreach ( array( 'WP_PluginsUsed', 'WP_PluginsUsed_Options', 'WP_PluginsUsed_Settings', 'WP_PluginsUsed_Template' ) as $class ) {
-			$this->assertStringStartsWith( 'WP_PluginsUsed', $class, 'Nothing unprefixed may reach the global namespace.' );
+		$declared = $this->classes_declared_by_the_plugin();
 
-			$file = 'class-' . str_replace( '_', '-', strtolower( $class ) ) . '.php';
+		// Without this the test passes by finding nothing -- a filter that
+		// matches no files is exactly how the version before it went vacuous.
+		$this->assertNotEmpty( $declared, 'No class was traced back to this plugin, so the checks below looked at nothing.' );
 
-			$this->assertFileExists(
-				dirname( __DIR__ ) . '/includes/' . $file,
-				"{$class} must be declared in includes/{$file}."
+		foreach ( $declared as $class => $file ) {
+			$this->assertStringStartsWith( 'WP_PluginsUsed', $class, $class . ' reaches the global namespace without the plugin prefix.' );
+
+			$expected = 'class-' . str_replace( '_', '-', strtolower( $class ) ) . '.php';
+
+			// The file the class was really declared in, rather than whether a
+			// file of that name happens to exist somewhere.
+			$this->assertSame(
+				dirname( __DIR__ ) . '/includes/' . $expected,
+				$file,
+				"{$class} must be declared in includes/{$expected}."
 			);
 		}
+	}
+
+	/**
+	 * The classes this plugin declared, mapped to the file each came from.
+	 *
+	 * The suite's own classes live under tests/ and are not the plugin's to
+	 * name, so they are left out.
+	 *
+	 * @return array<string, string> Class name to the file declaring it.
+	 */
+	protected function classes_declared_by_the_plugin() {
+		$root  = dirname( __DIR__ ) . '/';
+		$tests = __DIR__ . '/';
+		$ours  = array();
+
+		foreach ( get_declared_classes() as $class ) {
+			$file = ( new ReflectionClass( $class ) )->getFileName();
+
+			if ( is_string( $file ) && str_starts_with( $file, $root ) && ! str_starts_with( $file, $tests ) ) {
+				$ours[ $class ] = $file;
+			}
+		}
+
+		return $ours;
 	}
 
 	public function test_public_functions_are_available() {
