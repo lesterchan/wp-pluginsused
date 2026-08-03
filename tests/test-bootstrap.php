@@ -38,7 +38,7 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	public function test_every_code_file_refuses_direct_access( $file ) {
 		$path = dirname( __DIR__ ) . '/' . $file;
 
-		$this->assertFileExists( $path );
+		$this->assertFileExists( $path, $file . ' does not exist, so the guard assertion below would pass on an empty string.' );
 		$this->assertMatchesRegularExpression(
 			"/defined\(\s*'ABSPATH'\s*\)\s*\|\|\s*exit;/",
 			php_strip_whitespace( $path ),
@@ -67,7 +67,8 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	public function test_uninstall_is_guarded_by_its_own_constant() {
 		$this->assertMatchesRegularExpression(
 			"/defined\(\s*'WP_UNINSTALL_PLUGIN'\s*\)/",
-			php_strip_whitespace( dirname( __DIR__ ) . '/uninstall.php' )
+			php_strip_whitespace( dirname( __DIR__ ) . '/uninstall.php' ),
+			'uninstall.php refuses to run outside the uninstall context.'
 		);
 	}
 
@@ -94,10 +95,10 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_every_class_is_loaded() {
-		$this->assertTrue( class_exists( 'WP_PluginsUsed' ) );
-		$this->assertTrue( class_exists( 'WP_PluginsUsed_Options' ) );
-		$this->assertTrue( class_exists( 'WP_PluginsUsed_Settings' ) );
-		$this->assertTrue( class_exists( 'WP_PluginsUsed_Template' ) );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed' ), 'The main class is loaded by the bootstrap.' );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Options' ), 'The options class is loaded by the bootstrap.' );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Settings' ), 'The settings class is loaded by the bootstrap.' );
+		$this->assertTrue( class_exists( 'WP_PluginsUsed_Template' ), 'The template class is loaded by the bootstrap.' );
 	}
 
 	public function test_get_instance_is_a_singleton() {
@@ -122,12 +123,12 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_public_functions_are_available() {
-		$this->assertTrue( function_exists( 'display_pluginsused' ) );
-		$this->assertTrue( function_exists( 'get_pluginsused' ) );
-		$this->assertTrue( function_exists( 'get_pluginsused_data' ) );
-		$this->assertTrue( function_exists( 'process_pluginsused' ) );
-		$this->assertTrue( function_exists( 'pluginsused_format_display' ) );
-		$this->assertTrue( function_exists( 'pluginsused_sort' ) );
+		$this->assertTrue( function_exists( 'display_pluginsused' ), 'The documented display_pluginsused() is available to a theme.' );
+		$this->assertTrue( function_exists( 'get_pluginsused' ), 'The documented get_pluginsused() is available to a theme.' );
+		$this->assertTrue( function_exists( 'get_pluginsused_data' ), 'The documented get_pluginsused_data() is available to a theme.' );
+		$this->assertTrue( function_exists( 'process_pluginsused' ), 'The documented process_pluginsused() is available to a theme.' );
+		$this->assertTrue( function_exists( 'pluginsused_format_display' ), 'The documented pluginsused_format_display() is available to a theme.' );
+		$this->assertTrue( function_exists( 'pluginsused_sort' ), 'The documented pluginsused_sort() is available to a theme.' );
 	}
 
 	/**
@@ -145,6 +146,6 @@ class WP_PluginsUsed_Bootstrap_Test extends WP_PluginsUsed_TestCase {
 	public function test_settings_screen_is_not_wired_up_on_the_front_end() {
 		// is_admin() is false in the test suite, so the constructor must not
 		// have registered the admin hooks.
-		$this->assertFalse( has_action( 'admin_menu', array( 'WP_PluginsUsed_Settings', 'add_page' ) ) );
+		$this->assertFalse( has_action( 'admin_menu', array( 'WP_PluginsUsed_Settings', 'add_page' ) ), 'The settings screen is not hooked up on a front-end request.' );
 	}
 }

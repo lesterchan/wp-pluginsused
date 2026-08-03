@@ -40,7 +40,7 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		$plugins = get_pluginsused();
 
-		$this->assertArrayHasKey( 'zzz-alpha/zzz-alpha.php', $plugins );
+		$this->assertArrayHasKey( 'zzz-alpha/zzz-alpha.php', $plugins, 'get_pluginsused() is keyed by plugin file, as the old global was.' );
 		$this->assertSame( 'Alpha Test Plugin', $plugins['zzz-alpha/zzz-alpha.php']['Plugin_Name'] );
 	}
 
@@ -49,7 +49,8 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		$this->assertLessThan(
 			0,
-			pluginsused_sort( array( 'Plugin_Name' => 'Alpha' ), array( 'Plugin_Name' => 'beta' ) )
+			pluginsused_sort( array( 'Plugin_Name' => 'Alpha' ), array( 'Plugin_Name' => 'beta' ) ),
+			'The sort is case insensitive, so Alpha comes before beta.'
 		);
 	}
 
@@ -58,8 +59,8 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 
 		process_pluginsused();
 
-		$this->assertArrayHasKey( 'active', $GLOBALS['plugins_used'] );
-		$this->assertArrayHasKey( 'inactive', $GLOBALS['plugins_used'] );
+		$this->assertArrayHasKey( 'active', $GLOBALS['plugins_used'], 'The legacy global carries its active list.' );
+		$this->assertArrayHasKey( 'inactive', $GLOBALS['plugins_used'], 'The legacy global carries its inactive list.' );
 	}
 
 	public function test_pluginsused_format_display_still_renders_an_entry() {
@@ -112,7 +113,7 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 		$code = wp_pluginsused_test_source_code( array( 'deprecated.php' ) );
 
 		foreach ( array( 'get_pluginsused_data(', 'process_pluginsused(', 'pluginsused_format_display(', 'pluginsused_sort(' ) as $call ) {
-			$this->assertStringNotContainsString( $call, $code );
+			$this->assertStringNotContainsString( $call, $code, 'The plugin calls its own deprecated ' . $call . ' rather than the class behind it.' );
 		}
 	}
 
@@ -120,8 +121,8 @@ class WP_PluginsUsed_Deprecated_Test extends WP_PluginsUsed_TestCase {
 		// No setExpectedDeprecated() here on purpose: if the render path did
 		// call a shim, the test suite would fail this test with an unexpected
 		// deprecation.
-		$this->assertNotEmpty( WP_PluginsUsed_Template::render( 'active' ) );
-		$this->assertNotEmpty( do_shortcode( '[stats_pluginsused]' ) );
+		$this->assertNotEmpty( WP_PluginsUsed_Template::render( 'active' ), 'Rendering produces output, so the deprecation check above is about a real render.' );
+		$this->assertNotEmpty( do_shortcode( '[stats_pluginsused]' ), 'The shortcode produces output, so the deprecation check above is about a real render.' );
 	}
 
 	public function test_pluginsused_format_display_escapes_its_input() {

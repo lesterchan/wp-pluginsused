@@ -12,9 +12,9 @@
 class WP_PluginsUsed_Shortcodes_Test extends WP_PluginsUsed_TestCase {
 
 	public function test_all_three_shortcodes_are_registered() {
-		$this->assertTrue( shortcode_exists( 'stats_pluginsused' ) );
-		$this->assertTrue( shortcode_exists( 'active_pluginsused' ) );
-		$this->assertTrue( shortcode_exists( 'inactive_pluginsused' ) );
+		$this->assertTrue( shortcode_exists( 'stats_pluginsused' ), 'The stats_pluginsused shortcode is registered.' );
+		$this->assertTrue( shortcode_exists( 'active_pluginsused' ), 'The active_pluginsused shortcode is registered.' );
+		$this->assertTrue( shortcode_exists( 'inactive_pluginsused' ), 'The inactive_pluginsused shortcode is registered.' );
 	}
 
 	public function test_shortcodes_match_the_template_output() {

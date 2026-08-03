@@ -40,13 +40,14 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_uninstall_file_exists() {
-		$this->assertFileExists( dirname( __DIR__ ) . '/uninstall.php' );
+		$this->assertFileExists( dirname( __DIR__ ) . '/uninstall.php', 'The plugin ships an uninstall.php at all.' );
 	}
 
 	public function test_it_refuses_to_run_outside_the_uninstall_context() {
 		$this->assertMatchesRegularExpression(
 			"/if\s*\(\s*!\s*defined\(\s*'WP_UNINSTALL_PLUGIN'\s*\)\s*\)/",
-			$this->code()
+			$this->code(),
+			'uninstall.php refuses to run outside the uninstall context.'
 		);
 	}
 
@@ -59,7 +60,7 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_it_only_fetches_site_ids() {
-		$this->assertMatchesRegularExpression( "/get_sites\(.*?'fields'\s*=>\s*'ids'.*?\)/s", $this->code() );
+		$this->assertMatchesRegularExpression( "/get_sites\(.*?'fields'\s*=>\s*'ids'.*?\)/s", $this->code(), 'uninstall.php asks for site ids only, which is what makes the query affordable.' );
 	}
 
 	/**
@@ -73,10 +74,10 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 		$restore = strpos( $code, 'restore_current_blog' );
 		$closing = strpos( $code, 'else' );
 
-		$this->assertNotFalse( $foreach );
-		$this->assertNotFalse( $restore );
-		$this->assertGreaterThan( $foreach, $restore );
-		$this->assertLessThan( $closing, $restore );
+		$this->assertNotFalse( $foreach, 'uninstall.php has a foreach at all, or the ordering below means nothing.' );
+		$this->assertNotFalse( $restore, 'uninstall.php calls restore_current_blog at all.' );
+		$this->assertGreaterThan( $foreach, $restore, 'The restore comes after the foreach opens, so it is inside the loop.' );
+		$this->assertLessThan( $closing, $restore, 'The restore comes before the loop closes; once after it leaves the stack unwound by one.' );
 	}
 
 	public function test_it_does_not_use_the_deprecated_wp_get_sites() {
@@ -127,7 +128,7 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 		$code = $this->code();
 
 		foreach ( array( 'WP_PluginsUsed_Options', 'WP_PluginsUsed_Template', 'WP_PluginsUsed_Settings', 'display_pluginsused' ) as $symbol ) {
-			$this->assertStringNotContainsString( $symbol, $code );
+			$this->assertStringNotContainsString( $symbol, $code, 'uninstall.php names ' . $symbol . ', so it depends on the plugin having been loaded.' );
 		}
 	}
 

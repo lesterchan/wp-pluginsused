@@ -40,7 +40,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 	public function test_setting_is_registered_with_the_options_sanitizer() {
 		$registered = get_registered_settings();
 
-		$this->assertArrayHasKey( 'wp_pluginsused_options', $registered );
+		$this->assertArrayHasKey( 'wp_pluginsused_options', $registered, 'The settings row is registered, so its sanitise callback is attached.' );
 		$this->assertSame(
 			array( 'WP_PluginsUsed_Options', 'sanitize' ),
 			$registered['wp_pluginsused_options']['sanitize_callback']
@@ -166,7 +166,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 
 		$stored = get_option( 'wp_pluginsused_options' );
 
-		$this->assertTrue( $stored['show_version'] );
+		$this->assertTrue( $stored['show_version'], 'The saved form round-trips through the sanitiser to the stored row.' );
 		$this->assertSame( array( 'beta Test Plugin' ), $stored['hidden_plugins'] );
 	}
 
@@ -196,7 +196,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 
 		$stored = get_option( 'wp_pluginsused_options' );
 
-		$this->assertFalse( $stored['show_version'] );
+		$this->assertFalse( $stored['show_version'], 'An empty form clears the setting rather than leaving the old value.' );
 		$this->assertSame( array(), $stored['hidden_plugins'] );
 	}
 
@@ -234,14 +234,14 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertArrayNotHasKey( 'evil_key', get_option( 'wp_pluginsused_options' ) );
+		$this->assertArrayNotHasKey( 'evil_key', get_option( 'wp_pluginsused_options' ), 'A key the sanitiser does not know is discarded on save.' );
 	}
 
 	public function test_the_section_lists_every_installed_plugin() {
 		$html = $this->render();
 
 		foreach ( array( 'Alpha Test Plugin', 'beta Test Plugin', 'Hidden Test Plugin' ) as $name ) {
-			$this->assertStringContainsString( 'value="' . esc_attr( $name ) . '"', $html );
+			$this->assertStringContainsString( 'value="' . esc_attr( $name ) . '"', $html, $name . ' is installed but missing from the section.' );
 		}
 	}
 
@@ -252,7 +252,8 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 
 		$this->assertMatchesRegularExpression(
 			'/value="Alpha Test Plugin"\s+checked/',
-			$html
+			$html,
+			'A ticked plugin renders with its checkbox checked.'
 		);
 	}
 

@@ -54,8 +54,8 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$beta   = strpos( $inactive, 'beta Test Plugin' );
 		$hidden = strpos( $inactive, 'Hidden Test Plugin' );
 
-		$this->assertNotFalse( $beta );
-		$this->assertNotFalse( $hidden );
+		$this->assertNotFalse( $beta, 'beta Test Plugin is rendered at all, or the ordering assertion below is vacuous.' );
+		$this->assertNotFalse( $hidden, 'Hidden Test Plugin is rendered at all, or the ordering assertion below is vacuous.' );
 		$this->assertLessThan(
 			$hidden,
 			$beta,
@@ -238,7 +238,7 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 			}
 		}
 
-		$this->assertNotNull( $evil );
+		$this->assertNotNull( $evil, 'The description is rendered, or the texturize assertion below is vacuous.' );
 		$this->assertStringContainsString( '&#8220;quotes&#8221;', $evil['Description'] );
 	}
 
@@ -376,9 +376,9 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 	public function test_no_stylesheet_or_script_is_enqueued() {
 		do_action( 'wp_enqueue_scripts' );
 
-		$this->assertFalse( wp_style_is( 'wp-pluginsused', 'enqueued' ) );
-		$this->assertFalse( wp_script_is( 'wp-pluginsused', 'enqueued' ) );
-		$this->assertFalse( wp_script_is( 'jquery', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'wp-pluginsused', 'enqueued' ), 'This plugin enqueues no stylesheet of its own.' );
+		$this->assertFalse( wp_script_is( 'wp-pluginsused', 'enqueued' ), 'This plugin enqueues no script of its own.' );
+		$this->assertFalse( wp_script_is( 'jquery', 'enqueued' ), 'This plugin does not drag jQuery onto the page.' );
 	}
 
 	public function test_a_plugin_without_a_name_header_is_skipped() {

@@ -15,7 +15,7 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 
 		$options = WP_PluginsUsed_Options::get();
 
-		$this->assertTrue( $options['show_version'] );
+		$this->assertTrue( $options['show_version'], 'With no stored row, show_version takes its shipped default of on.' );
 		$this->assertSame( array(), $options['hidden_plugins'] );
 	}
 
@@ -191,7 +191,7 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 
 		$options = WP_PluginsUsed_Options::get();
 
-		$this->assertFalse( $options['show_version'] );
+		$this->assertFalse( $options['show_version'], 'A partial stored row is merged over the defaults, keeping the stored false.' );
 		$this->assertSame( array(), $options['hidden_plugins'], 'The missing key must come from the defaults.' );
 	}
 
@@ -200,7 +200,7 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 
 		$options = WP_PluginsUsed_Options::get();
 
-		$this->assertTrue( $options['show_version'] );
+		$this->assertTrue( $options['show_version'], 'A scalar where an array belongs falls back to the defaults.' );
 		$this->assertSame( array(), $options['hidden_plugins'] );
 	}
 
@@ -213,17 +213,17 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 	public function test_stored_show_version_is_honoured() {
 		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 
-		$this->assertFalse( WP_PluginsUsed_Options::show_version() );
+		$this->assertFalse( WP_PluginsUsed_Options::show_version(), 'A stored false is honoured.' );
 	}
 
 	public function test_show_version_filter_overrides_the_stored_value() {
 		update_option( 'wp_pluginsused_options', array( 'show_version' => false ) );
 
 		add_filter( 'wp_pluginsused_show_version', '__return_true' );
-		$this->assertTrue( WP_PluginsUsed_Options::show_version() );
+		$this->assertTrue( WP_PluginsUsed_Options::show_version(), 'A filter can override the stored value to on.' );
 
 		remove_filter( 'wp_pluginsused_show_version', '__return_true' );
-		$this->assertFalse( WP_PluginsUsed_Options::show_version() );
+		$this->assertFalse( WP_PluginsUsed_Options::show_version(), 'A filter can override the stored value to off.' );
 	}
 
 	/**
@@ -294,14 +294,14 @@ class WP_PluginsUsed_Options_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		$this->assertTrue( $clean['show_version'] );
+		$this->assertTrue( $clean['show_version'], 'A ticked checkbox normalises to true.' );
 		$this->assertSame( array( 'One', 'Two' ), $clean['hidden_plugins'] );
 	}
 
 	public function test_sanitize_treats_an_absent_checkbox_as_false() {
 		$clean = WP_PluginsUsed_Options::sanitize( array() );
 
-		$this->assertFalse( $clean['show_version'] );
+		$this->assertFalse( $clean['show_version'], 'An absent checkbox normalises to false rather than being left out.' );
 		$this->assertSame( array(), $clean['hidden_plugins'] );
 	}
 
