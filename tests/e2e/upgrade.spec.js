@@ -92,22 +92,24 @@ test.describe( 'The upgrade routine', () => {
 		// nothing to do and a later release has one row to think about.
 		expect( getLegacyOptions() ).toBe( false );
 
-		// This assertion currently fails, and it is right to. On the admin_init
-		// path -- the path every real update takes -- the settings do not come
-		// across: the legacy row is deleted and no current row is written, so an
-		// owner's hidden-plugins list is gone.
+		// This is the admin_init path -- the path every real update takes -- and
+		// the settings have to come across it, cleaned. Opening the settings
+		// screen is what makes it that path: register_setting() has run by the
+		// time migrate() does.
 		//
-		// register_setting() is passed a 'default', which installs a
-		// default_option_wp_pluginsused_options filter, so get_option() answers
-		// with the defaults array instead of false once admin_init has run.
-		// migrate()'s "there is no current row yet" branch is therefore never
-		// taken. The tidy-up write that follows it is then a no-op as well,
-		// because sanitising the defaults produces the defaults and
-		// update_option() declines to write a value it already has.
+		// The assertion is here because it once failed, and the shape is worth
+		// recognising. register_setting() is passed a 'default', which installs
+		// a default_option_wp_pluginsused_options filter, so a bare get_option()
+		// answers with the defaults array rather than false and migrate()'s
+		// "there is no current row yet" branch is never taken -- while the
+		// delete_option() below it runs regardless, taking the owner's
+		// hidden-plugins list with it. migrate() passes an explicit default now,
+		// which defeats the registered one.
 		//
-		// Reactivating works, which is why this is easy to miss: WP-CLI never
-		// runs register_setting(), so the branch is taken there. The test below
-		// that reactivates passes on the same fixture.
+		// Reactivating repaired it, which is why it was easy to miss: WP-CLI
+		// never runs register_setting(), so the branch is taken there. A
+		// migration test that does not register the setting first is testing
+		// WP-CLI. Do not weaken this to the reactivation path.
 		expect( getStoredOptions() ).toEqual( {
 			show_version: true,
 			hidden_plugins: [ hidden ],
