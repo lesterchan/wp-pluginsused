@@ -2,10 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-WP-PluginsUsed follows `_standards/STANDARDS.md` in the parent folder, which is
-the contract for all nineteen plugins in the collection. Where this file and
-that one disagree, that one wins.
-
 ## What it is
 
 Three shortcodes — `[pluginsused]`, `[pluginsused_active]`,
@@ -17,7 +13,8 @@ assets, no JavaScript.
 ## Data
 
 `wp_pluginsused_options` (`show_version`, `hidden_plugins`) and
-`wp_pluginsused_version`. **The released 1.50 stored nothing at all** — it was
+`wp_pluginsused_version`, which holds the `plugin` and `db` upgrade markers and
+nothing else. **The released 1.50 stored nothing at all** — it was
 configured by editing `wp-pluginsused.php`, so every plugin update reverted the
 site's settings. This is therefore the plugin's *first* migration, and
 `LEGACY_OPTION = 'pluginsused_options'` only ever existed inside the unreleased
@@ -42,9 +39,15 @@ global; neither is read any more.
   whole reason it survived: a migration test that does not register the setting
   first is testing WP-CLI.
   `test_the_migration_folds_the_row_in_on_the_admin_path_too` is the one that
-  registers it. wp-print had the same defect in a different shape, and
-  freemyinternet, wp-commentnavi and wp-pagenavi carry the identical `migrate()`
-  and were one `'default'` away from it.
+  registers it, and `tests/e2e/upgrade.spec.js` is the one that reaches the same
+  path through a browser, where registration happens by itself.
+
+  Two rules follow from the same defect. **Read the row raw when the question is
+  "was it written"** — the options accessor merges the defaults, so it cannot
+  tell a written row from an absent one. And **seed the shipped defaults, not
+  customised values**: a customised fixture's migrated result differs from the
+  defaults, so its write lands whatever the read before it did, and the test
+  passes straight through the bug.
 * **Plugin headers are attacker-controlled** for anyone who can drop a file in
   `wp-content/plugins`, and up to 1.50 the plugin only stripped tags — which
   leaves quotes intact, so a name containing `"` broke out of a `title=`
@@ -69,7 +72,7 @@ global; neither is read any more.
   multisite. Reading it unconditionally is safe — on single site it simply does
   not exist.
 * **The three public filters were renamed and the old names were dropped
-  outright**, per the collection's decision on renamed hooks. This one fails
+  outright**, with no `apply_filters_deprecated()` shim. This one fails
   *silently*: nothing errors, the plugin just stops asking the site's code what
   it thinks, and the symptom (hidden plugins reappearing) shows up days after an
   update nobody connects it to. The Upgrade Notice says to grep for
@@ -90,13 +93,14 @@ global; neither is read any more.
 
 ## Tests
 
-`tests/test-escaping.php` is the §7.2.4 guard for the security fix above;
+`bin/test.sh` runs PHPUnit, `bin/test-multisite.sh` the network pass, and
+`bin/test-e2e.sh` the Playwright suite. **Run them rather than trusting a note
+about their last result** — CI is the authority, and this file cannot be.
+
+`tests/test-escaping.php` is the guard for the security fix above;
 `test-template.php` pins the kses allow-list against the emitted markup;
 `test-summary.php` covers the three-sentence pluralisation.
-`tests/e2e/` is 4 specs and 26 tests, and **none of them has been run to green
-in one go** — verify before trusting. This plugin's `upgrade.spec.js` predates
-the 2026-08-05 sweep that ran the other eleven, so it was not among them.
 
-`run_uninstall()` in `helper-testcase.php` is the shared include point for
-`uninstall.php`; §7.2.1 names this plugin as the example of doing it right,
-because a second `require_once` of the uninstaller fatals on redeclare.
+`run_uninstall()` in `helper-testcase.php` is the single include point for
+`uninstall.php`, and every test that needs the uninstaller goes through it: a
+second `require_once` of that file fatals on redeclare.
