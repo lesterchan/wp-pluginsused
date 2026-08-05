@@ -93,8 +93,9 @@ global; neither is read any more.
 `tests/test-escaping.php` is the §7.2.4 guard for the security fix above;
 `test-template.php` pins the kses allow-list against the emitted markup;
 `test-summary.php` covers the three-sentence pluralisation.
-`tests/e2e/upgrade.spec.js` and `security.spec.js` are among the twelve suites
-listed as never run to green in `_standards/RESUME.md` — verify before trusting.
+`tests/e2e/` is 4 specs and 26 tests, and **none of them has been run to green
+in one go** — verify before trusting. This plugin's `upgrade.spec.js` predates
+the 2026-08-05 sweep that ran the other eleven, so it was not among them.
 
 `run_uninstall()` in `helper-testcase.php` is the shared include point for
 `uninstall.php`; §7.2.1 names this plugin as the example of doing it right,
