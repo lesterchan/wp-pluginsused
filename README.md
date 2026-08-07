@@ -92,9 +92,8 @@ settings screen.
 
 ## Screenshots
 
-1. Embed ShortCode Into Page
-2. Active Plugins
-3. Inactive Plugins
+1. Settings -> WP-PluginsUsed, which chooses what each entry shows and where it links
+2. The list of active plugins, on a page holding the shortcode
 
 ## Changelog
 
