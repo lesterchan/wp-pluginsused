@@ -26,6 +26,11 @@ function wp_pluginsused_uninstall_site() {
 	delete_option( 'wp_pluginsused_options' );
 	delete_option( 'wp_pluginsused_version' );
 
+	// The cached plugin headers. A site transient, so on multisite this is one
+	// network-wide row rather than one per site -- deleting it inside the loop
+	// costs a redundant query and nothing worse.
+	delete_site_transient( 'wp_pluginsused_headers' );
+
 	// The settings row went unprefixed before 2.0.0 shipped. The upgrade routine
 	// deletes it, so this only catches an install that never reached wp-admin
 	// between updating and being removed.

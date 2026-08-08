@@ -216,7 +216,7 @@ abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 	 */
 	protected function reset_plugin_state() {
 		wp_cache_delete( 'plugins', 'plugins' );
-		WP_PluginsUsed_Template::reset_cache();
+		WP_PluginsUsed_Template::flush_headers();
 	}
 
 	/**

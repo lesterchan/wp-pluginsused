@@ -13,6 +13,23 @@ defined( 'ABSPATH' ) || exit;
 class WP_PluginsUsed_Template {
 
 	/**
+	 * Site transient holding the installed plugins' headers.
+	 *
+	 * @var string
+	 */
+	const HEADERS_TRANSIENT = 'wp_pluginsused_headers';
+
+	/**
+	 * How long the headers are kept before being read off disk again.
+	 *
+	 * A plugin dropped in over FTP fires none of the hooks that discard this,
+	 * so something has to.
+	 *
+	 * @var int
+	 */
+	const HEADERS_TTL = DAY_IN_SECONDS;
+
+	/**
 	 * Per-request cache of the collected listing.
 	 *
 	 * Mirrors the pre-2.0.0 `$plugins_used` global: the list is gathered once
@@ -32,6 +49,68 @@ class WP_PluginsUsed_Template {
 	 */
 	public static function reset_cache() {
 		self::$plugins_used = null;
+	}
+
+	/**
+	 * Discard the cached plugin headers.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public static function flush_headers() {
+		delete_site_transient( self::HEADERS_TRANSIENT );
+		self::reset_cache();
+	}
+
+	/**
+	 * The installed plugins' headers, read from disk at most once a day.
+	 *
+	 * Core's get_plugins() opens the plugins directory, opens every plugin file
+	 * in it and reads the first 8KB of each. Core caches that, but in the `plugins`
+	 * group, which core registers as non-persistent -- so the scan happens on
+	 * every request even on a site running a persistent object cache. That is
+	 * an admin-screen cost being paid on a public page: these shortcodes run on
+	 * the front end, where any visitor arriving past the page cache pays it, as
+	 * many times a second as they care to ask.
+	 *
+	 * A site transient rather than a plain one because the plugins directory
+	 * is one directory for the whole network: a plugin deleted while site A
+	 * was in scope is gone from site B too, and a per-site transient would
+	 * have left every other site in the network reading it off a stale copy
+	 * until the day ran out.
+	 *
+	 * Everything that changes the answer through WordPress discards this, and
+	 * the expiry covers the rest. The hidden-plugins list and the version
+	 * setting are deliberately *not* baked in: filtering the headers is free,
+	 * so caching before that step means a settings save invalidates nothing.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array Installed plugins, keyed by plugin file, in get_plugins() shape.
+	 */
+	protected static function plugin_headers() {
+		$cached = get_site_transient( self::HEADERS_TRANSIENT );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		/*
+		 * get_plugins() lives in an admin include that is not loaded on the
+		 * front end, which is where these shortcodes actually run.
+		 */
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		// Already sorted by name with strnatcasecmp(), which is exactly the
+		// ordering the plugin's own sort callback applied before 2.0.0.
+		$installed = get_plugins();
+
+		set_site_transient( self::HEADERS_TRANSIENT, $installed, self::HEADERS_TTL );
+
+		return $installed;
 	}
 
 	/**
@@ -65,17 +144,7 @@ class WP_PluginsUsed_Template {
 			return self::$plugins_used;
 		}
 
-		/*
-		 * get_plugins() lives in an admin include that is not loaded on the
-		 * front end, which is where these shortcodes actually run.
-		 */
-		if ( ! function_exists( 'get_plugins' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
-		// Already sorted by name with strnatcasecmp(), which is exactly the
-		// ordering the plugin's own sort callback applied before 2.0.0.
-		$installed = get_plugins();
+		$installed = self::plugin_headers();
 
 		$active = (array) get_option( 'active_plugins', array() );
 

@@ -50,6 +50,22 @@ class WP_PluginsUsed {
 		 */
 		add_action( 'switch_blog', array( 'WP_PluginsUsed_Template', 'reset_cache' ) );
 
+		/*
+		 * The plugin headers are cached across requests because reading them
+		 * means opening every plugin file, and a visitor on the front end
+		 * should not be paying for that. Installing, updating or deleting a
+		 * plugin changes what is on disk, so each has to discard the copy.
+		 *
+		 * Activation and deactivation do not -- the active/inactive split is
+		 * read fresh every time -- but they are the moment a plugin uploaded
+		 * over FTP is first noticed, and a plugin the cache has never seen is
+		 * missing from the listing altogether rather than merely on the wrong
+		 * side of it.
+		 */
+		foreach ( array( 'activated_plugin', 'deactivated_plugin', 'deleted_plugin', 'upgrader_process_complete' ) as $changed ) {
+			add_action( $changed, array( 'WP_PluginsUsed_Template', 'flush_headers' ) );
+		}
+
 		// Must be registered while the plugin file is still being loaded, which
 		// is when this constructor runs.
 		register_activation_hook( WP_PLUGINSUSED_MAIN_FILE, array( __CLASS__, 'activate' ) );
