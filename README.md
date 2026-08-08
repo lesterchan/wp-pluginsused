@@ -25,6 +25,12 @@ inactive, on any post or page you like. It reads what is really in
 ### Donations
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
+## Installation
+
+1. Install and activate the plugin.
+1. Go to `WP-Admin -> Settings -> WP-PluginsUsed` to choose whether version numbers are shown and which plugins to leave out of the list.
+1. Put the listings on a page, with the shortcodes or with the blocks. Usage below has both.
+
 ## Usage
 
 ### Creating a Plugins Used page
