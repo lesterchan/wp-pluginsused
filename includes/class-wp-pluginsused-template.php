@@ -22,12 +22,13 @@ class WP_PluginsUsed_Template {
 	/**
 	 * How long the headers are kept before being read off disk again.
 	 *
-	 * A plugin dropped in over FTP fires none of the hooks that discard this,
-	 * so something has to.
+	 * The backstop under the fingerprint below, for the one change neither it
+	 * nor any hook can see: a plugin file edited in place, keeping its name, so
+	 * that only a header inside it moved.
 	 *
 	 * @var int
 	 */
-	const HEADERS_TTL = DAY_IN_SECONDS;
+	const HEADERS_TTL = HOUR_IN_SECONDS;
 
 	/**
 	 * Per-request cache of the collected listing.
@@ -80,20 +81,26 @@ class WP_PluginsUsed_Template {
 	 * have left every other site in the network reading it off a stale copy
 	 * until the day ran out.
 	 *
-	 * Everything that changes the answer through WordPress discards this, and
-	 * the expiry covers the rest. The hidden-plugins list and the version
-	 * setting are deliberately *not* baked in: filtering the headers is free,
-	 * so caching before that step means a settings save invalidates nothing.
+	 * Everything that changes the answer through WordPress discards this, the
+	 * fingerprint catches a plugin that arrived or left without WordPress
+	 * involved, and the expiry covers the rest. The hidden-plugins list and the
+	 * version setting are deliberately *not* baked in: filtering the headers is
+	 * free, so caching before that step means a settings save invalidates
+	 * nothing.
 	 *
 	 * @since 2.0.0
 	 *
 	 * @return array Installed plugins, keyed by plugin file, in get_plugins() shape.
 	 */
 	protected static function plugin_headers() {
-		$cached = get_site_transient( self::HEADERS_TRANSIENT );
+		$fingerprint = self::plugins_fingerprint();
+		$cached      = get_site_transient( self::HEADERS_TRANSIENT );
 
-		if ( is_array( $cached ) ) {
-			return $cached;
+		if ( isset( $cached['fingerprint'], $cached['plugins'] )
+			&& is_array( $cached['plugins'] )
+			&& $cached['fingerprint'] === $fingerprint
+		) {
+			return $cached['plugins'];
 		}
 
 		/*
@@ -108,9 +115,56 @@ class WP_PluginsUsed_Template {
 		// ordering the plugin's own sort callback applied before 2.0.0.
 		$installed = get_plugins();
 
-		set_site_transient( self::HEADERS_TRANSIENT, $installed, self::HEADERS_TTL );
+		set_site_transient(
+			self::HEADERS_TRANSIENT,
+			array(
+				'fingerprint' => $fingerprint,
+				'plugins'     => $installed,
+			),
+			self::HEADERS_TTL
+		);
 
 		return $installed;
+	}
+
+	/**
+	 * What the plugins directory looks like from outside, without opening it up.
+	 *
+	 * A plugin uploaded over FTP, unzipped by hand or dropped in by a
+	 * provisioning script fires none of the hooks that discard the stored
+	 * headers, and a plugin listing that does not list a plugin the owner just
+	 * installed is the plugin failing at its one job. Waiting for an expiry is
+	 * not an answer either: the owner refreshes, sees the old list, and
+	 * concludes the thing is broken.
+	 *
+	 * So the entry names are read every request and the headers are only reused
+	 * while they match. That is one directory read against get_plugins()'
+	 * directory read plus a file opened and parsed for every plugin in it,
+	 * which is the whole of the saving -- listing a directory was never the
+	 * expensive part.
+	 *
+	 * It does not see a header edited inside a file whose name did not change.
+	 * upgrader_process_complete covers that when WordPress did it and the
+	 * expiry covers it when something else did.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return string
+	 */
+	protected static function plugins_fingerprint() {
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			return '';
+		}
+
+		$entries = scandir( WP_PLUGIN_DIR );
+
+		if ( ! is_array( $entries ) ) {
+			return '';
+		}
+
+		sort( $entries );
+
+		return md5( implode( '|', $entries ) );
 	}
 
 	/**

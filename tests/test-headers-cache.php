@@ -25,7 +25,7 @@ class WP_PluginsUsed_Headers_Cache_Test extends WP_PluginsUsed_TestCase {
 		$stored = get_site_transient( WP_PluginsUsed_Template::HEADERS_TRANSIENT );
 
 		$this->assertIsArray( $stored, 'Collecting the listing did not store the headers it read.' );
-		$this->assertArrayHasKey( 'zzz-alpha/zzz-alpha.php', $stored, 'The stored headers are core\'s scan, keyed by plugin file.' );
+		$this->assertArrayHasKey( 'zzz-alpha/zzz-alpha.php', $stored['plugins'], 'The stored headers are core\'s scan, keyed by plugin file.' );
 	}
 
 	/**
@@ -109,6 +109,53 @@ class WP_PluginsUsed_Headers_Cache_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	/**
+	 * A plugin that arrives on disk is listed without any hook firing.
+	 *
+	 * FTP, an unzip by hand, a provisioning script: none of them tell
+	 * WordPress anything, and a plugin listing that does not list a plugin the
+	 * owner just installed is the plugin failing at its one job. The stored
+	 * headers carry a fingerprint of the directory's entries for this.
+	 */
+	public function test_a_plugin_dropped_onto_disk_is_listed_without_a_hook() {
+		// The directory outlives the test, so a fixture left by an earlier run
+		// would be in the listing before this one wrote anything and the
+		// assertion below would pass without the fingerprint doing a thing.
+		$this->delete_plugin_fixture( 'zzz-dropped' );
+		wp_cache_delete( 'plugins', 'plugins' );
+		WP_PluginsUsed_Template::flush_headers();
+
+		$before = wp_list_pluck( WP_PluginsUsed_Template::get_plugins_used()['inactive'], 'Plugin_Name' );
+
+		$this->assertNotContains( 'Dropped In Plugin', $before, 'The fixture is already on disk, so this test proves nothing.' );
+		$this->assertIsArray( get_site_transient( WP_PluginsUsed_Template::HEADERS_TRANSIENT ), 'Nothing was stored, so this would pass for the wrong reason.' );
+
+		try {
+			$this->create_plugin_fixture(
+				'zzz-dropped',
+				array(
+					'Plugin Name' => 'Dropped In Plugin',
+					'Plugin URI'  => '',
+					'Description' => '',
+					'Author'      => '',
+					'Author URI'  => '',
+					'Version'     => '1.0',
+				)
+			);
+
+			// Core's own scan is cached too, in a group this plugin does not
+			// own, and clearing it is not the thing under test.
+			wp_cache_delete( 'plugins', 'plugins' );
+			WP_PluginsUsed_Template::reset_cache();
+
+			$names = wp_list_pluck( WP_PluginsUsed_Template::get_plugins_used()['inactive'], 'Plugin_Name' );
+
+			$this->assertContains( 'Dropped In Plugin', $names, 'A plugin added to the directory was invisible until the cache expired.' );
+		} finally {
+			$this->delete_plugin_fixture( 'zzz-dropped' );
+		}
+	}
+
+	/**
 	 * Saving the settings does not invalidate anything, and need not.
 	 *
 	 * The hidden-plugins list and the version switch are applied to the headers
@@ -136,18 +183,27 @@ class WP_PluginsUsed_Headers_Cache_Test extends WP_PluginsUsed_TestCase {
 	 * @return void
 	 */
 	protected function store_a_probe() {
+		// Stored under the fingerprint the directory currently has, so the read
+		// accepts it -- the point of the probe is to tell a read from a scan,
+		// not to test the fingerprint.
+		WP_PluginsUsed_Template::get_plugins_used();
+
+		$stored = get_site_transient( WP_PluginsUsed_Template::HEADERS_TRANSIENT );
+
+		$stored['plugins'] = array(
+			'cache-probe/cache-probe.php' => array(
+				'Name'        => 'Cache Probe Plugin',
+				'PluginURI'   => '',
+				'Description' => '',
+				'Author'      => '',
+				'AuthorURI'   => '',
+				'Version'     => '1.0',
+			),
+		);
+
 		set_site_transient(
 			WP_PluginsUsed_Template::HEADERS_TRANSIENT,
-			array(
-				'cache-probe/cache-probe.php' => array(
-					'Name'        => 'Cache Probe Plugin',
-					'PluginURI'   => '',
-					'Description' => '',
-					'Author'      => '',
-					'AuthorURI'   => '',
-					'Version'     => '1.0',
-				),
-			),
+			$stored,
 			WP_PluginsUsed_Template::HEADERS_TTL
 		);
 
