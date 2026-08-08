@@ -432,4 +432,87 @@ class WP_PluginsUsed_Blocks_Test extends WP_PluginsUsed_TestCase {
 		// attribute and would make the arithmetic here a puzzle.
 		$this->assertSame( 2, substr_count( $rendered, 'https://example.com/alpha' ), 'The listing appears once for the block and once for the shortcode.' );
 	}
+
+	/**
+	 * Drive the core block-renderer route for one of this plugin's blocks.
+	 *
+	 * @param string $name Block name.
+	 * @return WP_REST_Response
+	 */
+	private function render_over_rest( $name ) {
+		$request = new WP_REST_Request( 'GET', '/wp/v2/block-renderer/' . $name );
+		$request->set_param( 'context', 'edit' );
+
+		return rest_get_server()->dispatch( $request );
+	}
+
+	/**
+	 * Registering a dynamic block is what creates /wp/v2/block-renderer/<name>,
+	 * and core gates that route on edit_posts -- a Contributor. So merely having
+	 * this plugin active published the whole inventory, inactive plugins and
+	 * exact versions included, to anybody who could open the editor, on a site
+	 * that had never placed a listing anywhere. Core keeps the same inventory
+	 * behind activate_plugins on /wp/v2/plugins.
+	 */
+	public function test_a_contributor_cannot_render_a_listing_over_the_block_renderer_route() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'contributor' ) ) );
+
+		$response = $this->render_over_rest( 'wp-pluginsused/inactive-pluginsused' );
+
+		$this->assertTrue( $response->is_error(), 'A contributor is refused.' );
+		$this->assertSame( 403, $response->get_status(), 'With a permission error rather than a render.' );
+
+		$body = wp_json_encode( $response->get_data() );
+
+		$this->assertStringNotContainsString( 'Hidden Test Plugin', $body, 'And no part of the inventory comes back in the refusal.' );
+		$this->assertStringNotContainsString( 'example.com/beta', $body, 'Nor any plugin URI.' );
+	}
+
+	/**
+	 * The gate is `manage_options`, not `activate_plugins`. Both belong to an
+	 * administrator on a single site, but under multisite core resolves
+	 * `activate_plugins` to `manage_network_plugins` for anyone who is not a
+	 * super admin -- so gating on it locks every site administrator on every
+	 * network out of previewing a block on their own site. This test only fails
+	 * on the network pass, which is where it earned its place.
+	 */
+	public function test_an_administrator_can_still_render_a_listing_over_the_block_renderer_route() {
+		wp_set_current_user( $this->create_admin() );
+
+		$response = $this->render_over_rest( 'wp-pluginsused/active-pluginsused' );
+
+		$this->assertFalse( $response->is_error(), 'A site administrator may preview the listing, on a network as on a single site.' );
+
+		$data = $response->get_data();
+
+		$this->assertStringContainsString( 'Alpha Test Plugin', $data['rendered'], 'And gets the listing.' );
+	}
+
+	/**
+	 * The guard is on the route, not on REST_REQUEST -- do_blocks() also runs
+	 * when a post's content is rendered through /wp/v2/posts, and a check on the
+	 * constant would blank the block for every reader of a headless site.
+	 */
+	public function test_the_guard_does_not_reach_an_ordinary_rest_render_of_post_content() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_content' => '<!-- wp:wp-pluginsused/active-pluginsused /-->',
+				'post_status'  => 'publish',
+			)
+		);
+
+		wp_set_current_user( 0 );
+
+		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post_id ) );
+
+		$this->assertFalse( $response->is_error(), 'The post reads normally.' );
+
+		$data = $response->get_data();
+
+		$this->assertStringContainsString(
+			'Alpha Test Plugin',
+			$data['content']['rendered'],
+			'And the block a site owner published still renders for an anonymous reader.'
+		);
+	}
 }

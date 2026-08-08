@@ -118,6 +118,9 @@ settings screen.
 ## Changelog
 
 ### 2.0.0
+* FIXED: Merely having the plugin active published the site's whole plugin inventory — inactive plugins and exact version numbers included — to anyone who could open the block editor, whether or not a listing had ever been placed on the site. Registering a dynamic block is what creates `/wp/v2/block-renderer/<name>`, and WordPress gates that route on `edit_posts`, i.e. a Contributor; core keeps the same inventory behind a much higher capability of its own. Previewing a listing block now takes `manage_options`, filterable through `wp_pluginsused_preview_capability`. Nothing changes for a listing published on a page
+* FIXED: A plugin whose name contains a double space, a tab or a percent-octet could be ticked as hidden, saved with a success notice, and go on being listed in full — and its checkbox came back unticked, so it read as a save that had not worked. The stored list is written through a sanitiser and was being compared against the raw plugin header; both sides go through the same normaliser now
+* FIXED: On multisite, one request that rendered a listing for more than one site applied the first site's plugin list, hidden-plugins setting and version setting to the second — so a plugin hidden on one site could be published on another. The per-request cache is discarded on `switch_blog`
 * BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4.
 * BREAKING: Renamed all three filters: `pluginsused_show_version`, `pluginsused_hidden_plugins` and `pluginsused_plugins_used` are now `wp_pluginsused_show_version`, `wp_pluginsused_hidden_plugins` and `wp_pluginsused_plugins_used`. The old names were dropped outright rather than deprecated, so code still using them stops being called.
 * BREAKING: Dropped the `PLUGINSUSED_SHOW_VERSION` constant and the `$pluginsused_hidden_plugins` global, the pre-2.0.0 ways of configuring the plugin by editing its own file. Use the settings screen.

@@ -217,8 +217,12 @@ class WP_PluginsUsed_Settings {
 		}
 
 		$options = WP_PluginsUsed_Options::get();
-		$hidden  = $options['hidden_plugins'];
-		$name    = WP_PluginsUsed_Options::OPTION . '[hidden_plugins][]';
+		// Normalised for the same reason the listing normalises: the stored list
+		// has been through the sanitiser and these names have not, so comparing
+		// them raw left the box unticked for any plugin whose name the sanitiser
+		// rewrites -- which read as a save that had not worked.
+		$hidden = array_map( array( 'WP_PluginsUsed_Template', 'normalize_name' ), $options['hidden_plugins'] );
+		$name   = WP_PluginsUsed_Options::OPTION . '[hidden_plugins][]';
 
 		$names = array();
 
@@ -249,7 +253,7 @@ class WP_PluginsUsed_Settings {
 				'<label><input type="checkbox" name="%s" value="%s"%s /> %s</label><br />',
 				esc_attr( $name ),
 				esc_attr( $plugin_name ),
-				checked( in_array( $plugin_name, $hidden, true ), true, false ),
+				checked( in_array( WP_PluginsUsed_Template::normalize_name( $plugin_name ), $hidden, true ), true, false ),
 				esc_html( $plugin_name )
 			);
 		}

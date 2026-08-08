@@ -88,6 +88,36 @@ class WP_PluginsUsed_Template_Test extends WP_PluginsUsed_TestCase {
 		$this->assertStringContainsString( 'Alpha Test Plugin', $active, 'The name must survive.' );
 	}
 
+	/**
+	 * The stored list goes through sanitize_text_field(); the Name header goes
+	 * through nothing. Comparing them raw meant a plugin whose name the
+	 * sanitiser rewrites could be ticked, saved with a success notice, and go on
+	 * being listed in full -- with the checkbox coming back unticked, so it read
+	 * as a save that had not worked rather than as a suppression that had not.
+	 */
+	public function test_a_plugin_whose_name_the_sanitiser_rewrites_can_still_be_hidden() {
+		$raw    = 'Gappy  Test%20 Plugin';
+		$stored = sanitize_text_field( $raw );
+
+		$this->assertNotSame( $raw, $stored, 'The premise: this name is not stored as it is written.' );
+
+		$before = WP_PluginsUsed_Template::get_plugins_used();
+		$total  = count( $before['active'] ) + count( $before['inactive'] );
+
+		// Through the sanitiser, exactly as the settings screen would save it.
+		update_option(
+			'wp_pluginsused_options',
+			WP_PluginsUsed_Options::sanitize( array( 'hidden_plugins' => array( $raw ) ) )
+		);
+		WP_PluginsUsed_Template::reset_cache();
+
+		$after  = WP_PluginsUsed_Template::get_plugins_used();
+		$markup = WP_PluginsUsed_Template::render( 'active' ) . WP_PluginsUsed_Template::render( 'inactive' );
+
+		$this->assertStringNotContainsString( 'Gappy', $markup, 'The plugin is out of the listing.' );
+		$this->assertSame( $total - 1, count( $after['active'] ) + count( $after['inactive'] ), 'And out of the counts.' );
+	}
+
 	public function test_hidden_plugins_are_removed_from_listing_and_counts() {
 		$before = WP_PluginsUsed_Template::get_plugins_used();
 		$total  = count( $before['active'] ) + count( $before['inactive'] );

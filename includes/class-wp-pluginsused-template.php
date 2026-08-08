@@ -35,6 +35,24 @@ class WP_PluginsUsed_Template {
 	}
 
 	/**
+	 * Reduce a plugin name to the form the hidden-plugins list is stored in.
+	 *
+	 * One place, called on both sides of the comparison, because the two sides
+	 * come from different worlds: the stored list has been through the settings
+	 * sanitiser and the Name header has been through nothing at all. Whatever
+	 * that sanitiser does to a name, this does to the name it is matched
+	 * against.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $name Plugin name.
+	 * @return string
+	 */
+	public static function normalize_name( $name ) {
+		return sanitize_text_field( (string) $name );
+	}
+
+	/**
 	 * Collect the installed plugins, split into active and inactive.
 	 *
 	 * @return array {
@@ -69,7 +87,20 @@ class WP_PluginsUsed_Template {
 		$sitewide = (array) get_site_option( 'active_sitewide_plugins', array() );
 		$active   = array_merge( $active, array_keys( $sitewide ) );
 
-		$hidden       = WP_PluginsUsed_Options::hidden_plugins();
+		/*
+		 * Both sides through the same normaliser, and that is the whole of this.
+		 *
+		 * The list is stored through sanitize_text_field() by the settings
+		 * sanitiser, and was compared against the *raw* Name header --
+		 * get_plugins() applies nothing but trim() to it. sanitize_text_field()
+		 * collapses runs of whitespace, deletes percent-octets and strips tags,
+		 * so any plugin whose name contains a double space, a tab, a "%2f"-shaped
+		 * substring or a "<" could be ticked as hidden, saved with a success
+		 * notice, and go on being listed -- name, author, description and version
+		 * -- with the checkbox coming back unticked, which reads as "the setting
+		 * did not save" rather than "the suppression is broken".
+		 */
+		$hidden       = array_map( array( __CLASS__, 'normalize_name' ), WP_PluginsUsed_Options::hidden_plugins() );
 		$show_version = WP_PluginsUsed_Options::show_version();
 
 		$plugins_used = array(
@@ -80,7 +111,7 @@ class WP_PluginsUsed_Template {
 		foreach ( $installed as $plugin_file => $data ) {
 			$name = isset( $data['Name'] ) ? $data['Name'] : '';
 
-			if ( '' === $name || in_array( $name, $hidden, true ) ) {
+			if ( '' === $name || in_array( self::normalize_name( $name ), $hidden, true ) ) {
 				continue;
 			}
 

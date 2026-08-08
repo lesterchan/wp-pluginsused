@@ -40,6 +40,16 @@ class WP_PluginsUsed {
 		add_shortcode( 'active_pluginsused', array( $this, 'shortcode_active' ) );
 		add_shortcode( 'inactive_pluginsused', array( $this, 'shortcode_inactive' ) );
 
+		/*
+		 * The collected listing is cached for the request, and on multisite a
+		 * request can render for more than one site -- a network aggregation
+		 * plugin, a REST call that switches blogs, any cross-site loop. Without
+		 * this, site A's active/inactive split, A's hidden-plugins list and A's
+		 * version setting were applied to site B's page, so a plugin hidden on B
+		 * could be published on B.
+		 */
+		add_action( 'switch_blog', array( 'WP_PluginsUsed_Template', 'reset_cache' ) );
+
 		// Must be registered while the plugin file is still being loaded, which
 		// is when this constructor runs.
 		register_activation_hook( WP_PLUGINSUSED_MAIN_FILE, array( __CLASS__, 'activate' ) );

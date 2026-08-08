@@ -54,6 +54,23 @@ abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 			'AuthorURI'   => 'https://example.com/authorh',
 			'Version'     => '3.1',
 		),
+
+		/*
+		 * A name the settings sanitiser rewrites: the double space collapses and
+		 * the percent-octet is deleted, so the stored value and the raw header
+		 * are not the same string. Every other fixture here survives
+		 * sanitize_text_field() byte for byte -- including the "evil" one, whose
+		 * double quote it leaves alone -- which is why the hide round-trip
+		 * looked covered while it was broken for exactly this shape of name.
+		 */
+		'zzz-gappy'  => array(
+			'Name'        => 'Gappy  Test%20 Plugin',
+			'PluginURI'   => 'https://example.com/gappy',
+			'Description' => 'A name the sanitiser rewrites.',
+			'Author'      => 'Gappy Author',
+			'AuthorURI'   => 'https://example.com/authorg',
+			'Version'     => '4.2',
+		),
 	);
 
 	/**

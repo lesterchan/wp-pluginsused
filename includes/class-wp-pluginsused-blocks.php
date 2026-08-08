@@ -72,6 +72,90 @@ class WP_PluginsUsed_Blocks {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register' ) );
+		add_filter( 'rest_request_before_callbacks', array( __CLASS__, 'guard_block_renderer' ), 10, 3 );
+	}
+
+	/**
+	 * The capability the editor preview of a listing requires.
+	 *
+	 * Not the same question as "may this render on a page". Publishing a listing
+	 * is the site owner's decision and the front end honours it; previewing one
+	 * in the editor is a decision nobody made, and it is available to anybody who
+	 * can open the editor at all.
+	 *
+	 * `manage_options` rather than `activate_plugins`, and the difference is a
+	 * multisite one. Both belong to an administrator on a single site, but under
+	 * multisite core's `map_meta_cap()` resolves `activate_plugins` to
+	 * `manage_network_plugins` for anyone who is not a super admin -- so gating
+	 * on it would have locked every site administrator on every network out of
+	 * previewing a block on their own site. `manage_options` means "administers
+	 * this site" in both, and it is already the capability that decides which
+	 * plugins are hidden from the listing, so the person who configures what the
+	 * list says is the person who can preview it.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return string
+	 */
+	public static function preview_capability() {
+		/**
+		 * Filters the capability required to render a listing block over REST.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $capability Capability name.
+		 */
+		return (string) apply_filters( 'wp_pluginsused_preview_capability', 'manage_options' );
+	}
+
+	/**
+	 * Refuse the core block-renderer route to users who may not see the list.
+	 *
+	 * Registering a dynamic block is what creates
+	 * `/wp/v2/block-renderer/<name>`, and core gates that route on
+	 * `edit_posts` -- a Contributor. So merely having this plugin active
+	 * published the site's full inventory, inactive plugins and exact versions
+	 * included, to every Contributor, on a site that had never placed a listing
+	 * anywhere. Core keeps the same inventory behind `activate_plugins` on
+	 * `/wp/v2/plugins`, and an inactive plugin is by definition one nobody has
+	 * been updating.
+	 *
+	 * Gated on the route rather than inside the render callbacks, and that
+	 * distinction is load-bearing: `do_blocks()` also runs during a REST render
+	 * of a post's content, so a check on `REST_REQUEST` would blank the block
+	 * for every reader of a headless site.
+	 *
+	 * Dropping `ServerSideRender` from the editor would not close this. The
+	 * route exists because the block is dynamic, not because the editor calls
+	 * it.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param mixed           $response Result to send, or null to continue.
+	 * @param array           $handler  Route handler.
+	 * @param WP_REST_Request $request  Request being dispatched.
+	 * @return mixed
+	 */
+	public static function guard_block_renderer( $response, $handler, $request ) {
+		unset( $handler );
+
+		if ( ! $request instanceof WP_REST_Request ) {
+			return $response;
+		}
+
+		if ( 0 !== strpos( (string) $request->get_route(), '/wp/v2/block-renderer/wp-pluginsused/' ) ) {
+			return $response;
+		}
+
+		if ( current_user_can( self::preview_capability() ) ) {
+			return $response;
+		}
+
+		return new WP_Error(
+			'wp_pluginsused_forbidden',
+			__( 'Sorry, you are not allowed to preview the list of plugins this site uses.', 'wp-pluginsused' ),
+			array( 'status' => rest_authorization_required_code() )
+		);
 	}
 
 	/**
