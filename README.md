@@ -40,6 +40,20 @@ Inactive Plugins
 ```
 4. Click 'Publish'
 
+### Showing The Listings In A Block
+
+Three blocks are available in the editor, under **Widgets**:
+
+* **Plugins Used Summary** — the sentence counting what is installed, active and inactive, the same one `[stats_pluginsused]` produces.
+* **Active Plugins Used** — the plugins your site has switched on.
+* **Inactive Plugins Used** — the ones installed but switched off.
+
+None of them has any settings, because none of the shortcodes has any either: which plugins appear is decided on the settings screen below, so the answer is the same on every page and there is nothing to configure per post.
+
+All three render on the server, so the block preview in the editor is the real listing rather than an approximation, and installing, activating or hiding a plugin updates every page showing one without re-saving anything.
+
+**The shortcodes still work and are not going anywhere.** `[stats_pluginsused]`, `[active_pluginsused]` and `[inactive_pluginsused]` behave exactly as they always have, and a page already containing one needs no change. The blocks call the same code the shortcodes call, so the two render identically — use whichever suits the page.
+
 ### Settings
 Go to `WP-Admin -> Settings -> WP-PluginsUsed` to choose whether version numbers
 are shown and to tick any plugins you would rather not list. Hidden plugins are
@@ -105,6 +119,7 @@ settings screen.
 * NEW: Settings are stored in a single `wp_pluginsused_options` row and the upgrade markers in `wp_pluginsused_version`, and `uninstall.php` removes both on a single site and across a network.
 * NEW: Added the `wp_pluginsused_capability` filter, so the settings screen can be handed to a role other than administrator.
 * NEW: Replaced the `plugin_active.gif` / `plugin_inactive.gif` markers with inline SVG. They stay sharp on high-density displays, follow the theme's text colour, and add no HTTP requests.
+* NEW: Added three blocks — Plugins Used Summary, Active Plugins Used and Inactive Plugins Used — one for each shortcode. They render on the server through the same code the shortcodes use, so the two produce identical markup and hidden plugins stay hidden either way. The three shortcodes are unchanged and still supported: nothing is deprecated, no page needs editing, and a page can carry a block and a shortcode at once.
 * NEW: Added a PHPUnit test suite and GitHub Actions CI.
 * CHANGED: Plugin scanning now uses core's `get_plugins()` instead of a hand-rolled directory walk and header regexes. Ordering is unchanged.
 * CHANGED: Restructured into `includes/` as `WP_PluginsUsed_*` classes, with the old procedural functions kept as working deprecated shims.

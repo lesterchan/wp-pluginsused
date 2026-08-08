@@ -69,8 +69,10 @@ define( 'WP_PLUGINSUSED_URL', plugin_dir_url( __FILE__ ) );
 require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-options.php';
 require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-template.php';
 require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-settings.php';
+require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused-blocks.php';
 require_once WP_PLUGINSUSED_DIR . 'includes/class-wp-pluginsused.php';
 require_once WP_PLUGINSUSED_DIR . 'includes/template-tags.php';
 require_once WP_PLUGINSUSED_DIR . 'includes/deprecated.php';
 
 WP_PluginsUsed::get_instance();
+WP_PluginsUsed_Blocks::init();

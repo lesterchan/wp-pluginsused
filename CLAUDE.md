@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What it is
 
-Three shortcodes — `[pluginsused]`, `[pluginsused_active]`,
-`[pluginsused_inactive]` — plus a summary line, that render the site's installed
-plugins on a public page. One settings screen under Settings for hiding
-individual plugins and switching version numbers off. No tables, no front-end
-assets, no JavaScript.
+Three shortcodes — `[stats_pluginsused]`, `[active_pluginsused]`,
+`[inactive_pluginsused]` — and three blocks wrapping the same three renders,
+which put the site's installed plugins on a public page. One settings screen
+under Settings for hiding individual plugins and switching version numbers off.
+No tables, no front-end assets, and no front-end JavaScript: the only JavaScript
+in the plugin is the blocks' editor scripts.
 
 ## Data
 
@@ -81,6 +82,22 @@ global; neither is read any more.
   into the concatenation. Rendered output is byte-identical to pre-2.0.0, but the
   three msgids changed, so existing translations fall back to English. Recorded
   as a `NOTE:` in the changelog — do not "fix" it by putting the markup back.
+* **The blocks are an addition to the shortcodes and never a replacement.** Both
+  entry points call `WP_PluginsUsed_Template::render()` and neither calls the
+  other — no `do_shortcode()` in the block, no block lookup in the shortcode —
+  so `tests/test-blocks.php` can unregister either one and watch the other carry
+  on. There are three blocks rather than one with a listing-type attribute
+  because none of the shortcodes takes an attribute either, and because a block
+  name is fixed in `post_content` for the life of the post where an attribute is
+  a value a later default can flip.
+* **`build/` is generated, gitignored, and shipped; `src/` is committed and not
+  shipped.** `register_block_type_from_metadata()` reads `build/`, so a checkout
+  that has never run `bin/build` registers no blocks at all — `register()` skips
+  a directory with no `block.json` rather than registering something whose script
+  cannot load. `bin/test.sh` and `bin/test-e2e.sh` build first for that reason.
+  `bin/build` also writes the silence-is-golden `index.php` into every directory
+  it produced, walking them rather than listing them, because webpack does not
+  know that rule and a block added later would otherwise ship without one.
 * `get_plugins()` lives in an admin include; `get_plugins_used()` requires it
   explicitly because these shortcodes run on the **front end**.
 * `WP_PluginsUsed_Template::$plugins_used` is a per-request cache mirroring the
@@ -99,7 +116,13 @@ about their last result** — CI is the authority, and this file cannot be.
 
 `tests/test-escaping.php` is the guard for the security fix above;
 `test-template.php` pins the kses allow-list against the emitted markup;
-`test-summary.php` covers the three-sentence pluralisation.
+`test-summary.php` covers the three-sentence pluralisation. `test-blocks.php`
+pins that each block and its shortcode emit *identical* markup and that a plugin
+hidden on the settings screen stays out of a block-rendered page — the one
+assertion there that is about a disclosure rather than about tidiness. It
+snapshots `$GLOBALS['shortcode_tags']` and re-registers the blocks in
+`set_up`/`tear_down`, because both registries are process-global and the tests
+that unregister things would otherwise disarm every test after them.
 
 `run_uninstall()` in `helper-testcase.php` is the single include point for
 `uninstall.php`, and every test that needs the uninstaller goes through it: a
