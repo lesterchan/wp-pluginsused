@@ -92,7 +92,7 @@ settings screen.
 
 ## Screenshots
 
-1. Settings -> WP-PluginsUsed, which chooses what each entry shows and where it links
+1. Settings -> WP-PluginsUsed, which chooses whether versions are shown and which plugins are left out
 2. The list of active plugins, on a page holding the shortcode
 
 ## Changelog
