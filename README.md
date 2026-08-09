@@ -139,6 +139,7 @@ settings screen.
 * FIXED: A plugin with no `Plugin URI` or `Author URI` no longer renders an empty `<a href="">`.
 * FIXED: `uninstall.php` no longer stops at the hundredth site on multisite, and restores each site inside the loop.
 * NOTE: The three phrases making up the summary sentence were reworded so their bold markup is no longer part of the translated text. Existing translations of those three fall back to English until they are retranslated.
+* NOTE: The summary sentence joined its three counts with a bare translated "and", leaving the word order and the full stop in the source. The join is one string with numbered placeholders now. That msgid changed, so an existing translation of it falls back to English until it is retranslated
 
 ## Upgrade Notice
 

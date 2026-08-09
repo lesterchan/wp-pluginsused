@@ -48,6 +48,35 @@ class WP_PluginsUsed_Summary_Test extends WP_PluginsUsed_TestCase {
 		return $stats;
 	}
 
+	/**
+	 * The three counts are joined by a translatable string, not by PHP.
+	 *
+	 * The join used to be a bare "and" concatenated between the parts, with
+	 * the word order and the full stop living in the source. A translator
+	 * handed only "and" cannot move the inactive count in front of the active
+	 * one, and several languages want to -- so the test reorders the join and
+	 * asserts the sentence follows.
+	 */
+	public function test_the_summary_word_order_comes_from_the_translation() {
+		$reorder = static function ( $translation, $text, $domain ) {
+			if ( 'wp-pluginsused' === $domain && '%1$s %2$s and %3$s.' === $text ) {
+				return '%1$s %3$s, then %2$s!';
+			}
+
+			return $translation;
+		};
+
+		add_filter( 'gettext', $reorder, 10, 3 );
+		$stats = $this->stats_for( 2, 3 );
+		remove_filter( 'gettext', $reorder, 10 );
+
+		$this->assertStringContainsString(
+			'<strong>3 inactive plugins</strong>, then <strong>2 active plugins</strong>!',
+			$stats,
+			'The translated join decides the order of the counts and the punctuation.'
+		);
+	}
+
 	public function test_one_plugin_uses_the_singular_form() {
 		$stats = $this->stats_for( 1, 0 );
 

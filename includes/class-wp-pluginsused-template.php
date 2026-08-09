@@ -337,10 +337,21 @@ class WP_PluginsUsed_Template {
 			number_format_i18n( $inactive )
 		);
 
-		return $total_text
-			. ' <strong>' . $active_text . '</strong> '
-			. __( 'and', 'wp-pluginsused' )
-			. ' <strong>' . $inactive_text . '</strong>.';
+		/*
+		 * One joining string rather than a bare "and" between concatenations.
+		 * The three counts stay separately pluralised -- that part was always
+		 * right -- but the order they appear in, and the full stop, were facts
+		 * about English held in PHP. A translator handed only "and" cannot move
+		 * the inactive count in front of the active one, and several languages
+		 * want to. The <strong> stays outside the msgid for the reason above.
+		 */
+		return sprintf(
+			/* translators: 1: the total-plugins sentence, 2: the active count, 3: the inactive count. */
+			__( '%1$s %2$s and %3$s.', 'wp-pluginsused' ),
+			$total_text,
+			'<strong>' . $active_text . '</strong>',
+			'<strong>' . $inactive_text . '</strong>'
+		);
 	}
 
 	/**
