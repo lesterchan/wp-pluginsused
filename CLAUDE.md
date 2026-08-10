@@ -18,8 +18,8 @@ in the plugin is the blocks' editor scripts.
 nothing else. **The released 1.50 stored nothing at all** — it was
 configured by editing `wp-pluginsused.php`, so every plugin update reverted the
 site's settings. This is therefore the plugin's *first* migration, and
-`LEGACY_OPTION = 'pluginsused_options'` only ever existed inside the unreleased
-2.0.0, so it is seen only on a development build. The retired escape hatches
+`LEGACY_OPTION = 'pluginsused_options'` only ever existed inside pre-release
+2.0.0 builds, so it is seen only on a development checkout. The retired escape hatches
 were the `PLUGINSUSED_SHOW_VERSION` constant and a `$pluginsused_hidden_plugins`
 global; neither is read any more.
 
