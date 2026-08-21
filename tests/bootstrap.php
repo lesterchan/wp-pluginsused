@@ -37,10 +37,10 @@ require_once $_tests_dir . '/includes/functions.php';
  *
  * @return void
  */
-function wp_pluginsused_test_load_plugin() {
+function _wp_pluginsused_manually_load_plugin() {
 	require dirname( __DIR__ ) . '/wp-pluginsused.php';
 }
-tests_add_filter( 'muplugins_loaded', 'wp_pluginsused_test_load_plugin' );
+tests_add_filter( 'muplugins_loaded', '_wp_pluginsused_manually_load_plugin' );
 
 require $_tests_dir . '/includes/bootstrap.php';
 
