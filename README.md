@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: plugins used, plugin used, plugins use, plugins, plugin  
 Requires at least: 6.8  
 Tested up to: 7.1  
-Stable tag: 2.0.0  
+Stable tag: 2.0.1  
 Requires PHP: 8.2  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -116,6 +116,9 @@ settings screen.
 2. The list of active plugins, on a page holding the shortcode
 
 ## Changelog
+
+### 2.0.1
+* FIXED: Network-activating the plugin migrated only the site the click happened on. Every other site on the network kept its pre-2.0.0 settings row unread — including its hidden-plugins list, so a listing on such a site could keep showing plugins it had been told to hide — until somebody opened that site's wp-admin, which runs the same migration and heals it. Activation now walks every site on the network
 
 ### 2.0.0
 * FIXED: Merely having the plugin active published the site's whole plugin inventory — inactive plugins and exact version numbers included — to anyone who could open the block editor, whether or not a listing had ever been placed on the site. Registering a dynamic block is what creates `/wp/v2/block-renderer/<name>`, and WordPress gates that route on `edit_posts`, i.e. a Contributor; core keeps the same inventory behind a much higher capability of its own. Previewing a listing block now takes `manage_options`, filterable through `wp_pluginsused_preview_capability`. Nothing changes for a listing published on a page

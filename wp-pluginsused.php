@@ -3,7 +3,7 @@
  * Plugin Name: WP-PluginsUsed
  * Plugin URI: https://lesterchan.net/portfolio/programming/php/
  * Description: Display WordPress plugins that you currently have (both active and inactive) onto a post/page.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Requires at least: 6.8
  * Requires PHP: 8.2
  * Author: Lester 'GaMerZ' Chan
@@ -39,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * WP-PluginsUsed version. The last-run value is kept in the wp_pluginsused_version row.
  */
-define( 'WP_PLUGINSUSED_VERSION', '2.0.0' );
+define( 'WP_PLUGINSUSED_VERSION', '2.0.1' );
 
 /**
  * Schema counter. Bumped only when the stored rows need reshaping.
