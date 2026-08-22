@@ -6,9 +6,10 @@
  * the version markers are per-site rows, so an activation that upgrades only
  * whichever site happened to be current leaves every other site's pre-2.0.0 row
  * unread. Nothing is destroyed by that -- the legacy row is only deleted once it
- * has been folded in, and the admin load runs the same routine -- which is
- * precisely why it went unnoticed: each site heals the moment somebody opens its
- * dashboard, and a network whose subsites are front-end only never does.
+ * has been folded in, and the init hook runs the same routine on each site's
+ * next request -- which is precisely why it went unnoticed: every site heals
+ * the moment anything loads it, and a site nobody visits shows its stale
+ * listing to nobody.
  *
  * @package WP-PluginsUsed
  */

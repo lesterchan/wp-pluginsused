@@ -118,6 +118,7 @@ settings screen.
 ## Changelog
 
 ### 2.0.1
+* CHANGED: The settings migration now runs early on every request instead of only when wp-admin is loaded, so a site whose dashboard is never opened still picks up its settings after an update
 * FIXED: Network-activating the plugin migrated only the site the click happened on. Every other site on the network kept its pre-2.0.0 settings row unread — including its hidden-plugins list, so a listing on such a site could keep showing plugins it had been told to hide — until somebody opened that site's wp-admin, which runs the same migration and heals it. Activation now walks every site on the network
 
 ### 2.0.0

@@ -104,9 +104,10 @@ class WP_PluginsUsed_Options {
 	/**
 	 * Bring the stored rows up to date with the running code.
 	 *
-	 * Runs on activation and on every admin load, because activation hooks do not
-	 * fire when a plugin is updated -- which is the usual reason a migration never
-	 * runs. Idempotent: once the markers agree it costs one autoloaded read.
+	 * Runs on activation and early on every request, from init at priority 5.
+	 * Activation does not fire on a plugin update, which is the single most
+	 * common reason a migration never runs. Idempotent: once the markers agree
+	 * it costs one autoloaded read.
 	 *
 	 * Both markers are written together in one update_option() at the very end, so
 	 * a half-finished upgrade never records itself as complete.
@@ -137,10 +138,13 @@ class WP_PluginsUsed_Options {
 	 * `update_option()` declines to write a value equal to the one
 	 * `get_option()` would return, and `register_setting()` is passed a
 	 * `default`, which installs a `default_option_wp_pluginsused_options` filter answering with
-	 * the shipped defaults for a row that does not exist. So on an admin request
-	 * -- the path every real update takes, because activation hooks do not fire
-	 * on an update -- a migration whose result happens to equal the defaults
-	 * writes nothing at all, while the legacy rows it read are deleted anyway.
+	 * the shipped defaults for a row that does not exist. So once that filter is
+	 * live -- as it was on every real update while the upgrade hung off
+	 * admin_init, after register() -- a migration whose result happens to equal
+	 * the defaults writes nothing at all, while the legacy rows it read are
+	 * deleted anyway. The upgrade rides init at priority 5 now, before the
+	 * filter exists, and this helper is what keeps a later hook move from
+	 * rearming the trap.
 	 *
 	 * Passing an explicit default to `get_option()` defeats the registered one,
 	 * because `filter_default_option()` returns early when a default was passed.
@@ -193,8 +197,9 @@ class WP_PluginsUsed_Options {
 			 * settings with it. Passing an explicit default defeats the registered
 			 * one: filter_default_option() returns early when a default was passed.
 			 *
-			 * It bites only on an admin request. Activation and WP-CLI never run
-			 * register_setting(), which is why reactivating repairs it and why every
+			 * It bites only once register_setting() has run, on admin_init.
+			 * Activation, WP-CLI and the init hook the upgrade rides all come
+			 * before that, which is why reactivating repairs it and why every
 			 * test that goes through activation passes.
 			 */
 			if ( false === get_option( self::OPTION, false ) ) {

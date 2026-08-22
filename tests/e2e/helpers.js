@@ -255,7 +255,7 @@ function clearFixtureOption( name ) {
  *
  * The other entry point into the upgrade routine, and genuinely a different one:
  * updating through the Plugins screen never fires the activation hook and leaves
- * admin_init to run the migration alone.
+ * init to run the migration alone.
  *
  * @return {void}
  */

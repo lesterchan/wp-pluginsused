@@ -91,21 +91,22 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	/**
-	 * The same fold, on the path every real update takes.
+	 * The same fold, with the setting registered first.
 	 *
-	 * Activation hooks do not fire when a plugin is updated, so a site that
-	 * updates through the Plugins screen reaches the migration through admin_init
-	 * -- and register() is hooked to admin_init first, so by then
-	 * register_setting()'s `default` has installed a default_option filter and a
-	 * bare get_option() answers with the defaults array rather than false. The
-	 * "there is no current row yet" branch was therefore never taken, while the
-	 * delete a few lines below ran regardless: the hidden-plugins list was read
-	 * and thrown away.
+	 * register_setting() is passed a `default`, which installs a
+	 * default_option filter -- so once it has run, a bare get_option() answers
+	 * with the defaults array rather than false. While the upgrade hung off
+	 * admin_init, after register(), that was the path every real update took:
+	 * the "there is no current row yet" branch was never taken, while the
+	 * delete a few lines below ran regardless -- the hidden-plugins list was
+	 * read and thrown away.
 	 *
-	 * Every test above passes on that bug, because none of them registers the
-	 * setting first -- which is the same thing as saying they all test WP-CLI.
+	 * The upgrade rides init at priority 5 now, before the filter exists, and
+	 * every test above calls maybe_upgrade() bare, which is the state init
+	 * runs it in. This one keeps the filter live during the fold so a later
+	 * hook move cannot rearm the trap silently.
 	 */
-	public function test_the_migration_folds_the_row_in_on_the_admin_path_too() {
+	public function test_the_migration_folds_the_row_in_even_with_the_setting_registered() {
 		delete_option( 'wp_pluginsused_options' );
 		update_option(
 			'pluginsused_options',

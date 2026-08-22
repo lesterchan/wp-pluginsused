@@ -27,21 +27,22 @@ global; neither is read any more.
 
 * **`migrate()` asks `get_option( self::OPTION, false )`, and the second argument
   is load-bearing.** `register_setting()` is passed a `default`, which installs a
-  `default_option_wp_pluginsused_options` filter, and `maybe_upgrade()` is hooked
-  to `admin_init` *after* `register_settings()` — so a bare `get_option()` answers
-  with the defaults array and never with `false`. The "there is no current row
-  yet" branch was therefore never taken on the admin path, while the
-  `delete_option()` below it ran regardless: the owner's hidden-plugins list was
-  read and thrown away. Passing an explicit default defeats the registered one,
-  because `filter_default_option()` returns early when a default was passed.
+  `default_option_wp_pluginsused_options` filter — so once it has run, a bare
+  `get_option()` answers with the defaults array and never with `false`. While
+  `maybe_upgrade()` hung off `admin_init` *after* `register()`, that was every
+  real update's path: the "there is no current row yet" branch was never taken,
+  while the `delete_option()` below it ran regardless — the owner's
+  hidden-plugins list was read and thrown away. Passing an explicit default
+  defeats the registered one, because `filter_default_option()` returns early
+  when a default was passed.
 
-  **Activation and WP-CLI never run `register_setting()`**, so reactivating
-  repaired it and every test that went through activation passed. That is the
-  whole reason it survived: a migration test that does not register the setting
-  first is testing WP-CLI.
-  `test_the_migration_folds_the_row_in_on_the_admin_path_too` is the one that
-  registers it, and `tests/e2e/upgrade.spec.js` is the one that reaches the same
-  path through a browser, where registration happens by itself.
+  The upgrade now runs from `init` at priority 5, before the filter exists, and
+  `write()` keeps defending so a later hook move cannot rearm the trap
+  silently.
+  `test_the_migration_folds_the_row_in_even_with_the_setting_registered` is the
+  one that keeps the filter live during the fold, and
+  `tests/e2e/upgrade.spec.js` is the one that reaches the migration through a
+  browser, on the ordering real requests run.
 
   Two rules follow from the same defect. **Read the row raw when the question is
   "was it written"** — the options accessor merges the defaults, so it cannot

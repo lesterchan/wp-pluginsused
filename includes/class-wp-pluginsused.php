@@ -70,6 +70,10 @@ class WP_PluginsUsed {
 		// is when this constructor runs.
 		register_activation_hook( WP_PLUGINSUSED_MAIN_FILE, array( __CLASS__, 'activate' ) );
 
+		// Activation does not fire on a plugin update, which is the single most
+		// common reason a migration never runs.
+		add_action( 'init', array( 'WP_PluginsUsed_Options', 'maybe_upgrade' ), 5 );
+
 		if ( is_admin() ) {
 			WP_PluginsUsed_Settings::init();
 		}

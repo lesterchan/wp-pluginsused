@@ -3,9 +3,9 @@
  *
  * Activation hooks do not fire when a plugin is updated -- a site that updates
  * through the Plugins screen never calls activate() -- so the plugin also hangs
- * maybe_upgrade() off admin_init. That hook is the one every real upgrade
- * actually goes through, and it is only reachable by loading an admin page in a
- * browser, which is what these two tests do.
+ * maybe_upgrade() off init at priority 5, which fires on every request. A real
+ * request running the plugin's own wiring is what these tests reach by loading
+ * admin pages in a browser.
  *
  * Both of them then check the far end rather than a notice: the rows themselves,
  * and the page the migrated settings are supposed to change.
@@ -92,10 +92,10 @@ test.describe( 'The upgrade routine', () => {
 		// nothing to do and a later release has one row to think about.
 		expect( getLegacyOptions() ).toBe( false );
 
-		// This is the admin_init path -- the path every real update takes -- and
-		// the settings have to come across it, cleaned. Opening the settings
-		// screen is what makes it that path: register_setting() has run by the
-		// time migrate() does.
+		// This is the init path -- the path every real update takes -- and the
+		// settings have to come across it, cleaned. The migration runs at init,
+		// before admin_init has run register_setting(), so the cleaning is the
+		// migration's own doing.
 		//
 		// The assertion is here because it once failed, and the shape is worth
 		// recognising. register_setting() is passed a 'default', which installs
@@ -210,7 +210,7 @@ test.describe( 'The upgrade routine', () => {
 
 	test( 'an install already on this version is left alone', async ( { page } ) => {
 		// A row the sanitizer would rewrite if it ran, and markers saying it has
-		// already run. maybe_upgrade() returning early is what keeps every admin
+		// already run. maybe_upgrade() returning early is what keeps every
 		// request from being an option write, so the proof it returned early is
 		// that this deliberately dirty row survives untouched.
 		const dirty = { show_version: 'yes please', hidden_plugins: [ '', '' ] };
@@ -218,7 +218,7 @@ test.describe( 'The upgrade routine', () => {
 		setOptions( dirty );
 
 		// Stamped here rather than leaned on from the test before it, because a
-		// row that was not current would make the first admin load sanitise the
+		// row that was not current would make the next request sanitise the
 		// fixture and the assertion below would be about the wrong thing.
 		setVersionRow( runningVersions() );
 

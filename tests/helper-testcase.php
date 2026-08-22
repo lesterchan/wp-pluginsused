@@ -124,6 +124,13 @@ abstract class WP_PluginsUsed_TestCase extends WP_UnitTestCase {
 
 		update_option( 'active_plugins', self::$active );
 
+		// Start every test from a fresh install. The upgrade hook rides init,
+		// which has already fired once while the suite booted, so the version
+		// row it stamped would otherwise gate migrate() out of every test.
+		delete_option( 'wp_pluginsused_options' );
+		delete_option( 'wp_pluginsused_version' );
+		delete_option( 'pluginsused_options' );
+
 		$this->reset_plugin_state();
 	}
 
