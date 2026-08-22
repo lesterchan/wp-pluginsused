@@ -103,7 +103,7 @@ class WP_PluginsUsed_Blocks {
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param string $capability Capability name.
+		 * @param string $capability The required capability.
 		 */
 		return (string) apply_filters( 'wp_pluginsused_preview_capability', 'manage_options' );
 	}

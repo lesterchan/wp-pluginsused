@@ -57,7 +57,7 @@ class WP_PluginsUsed_Settings {
 	const SECTION_HIDDEN = 'wp_pluginsused_hidden';
 
 	/**
-	 * Hook the screen up.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */
@@ -83,7 +83,7 @@ class WP_PluginsUsed_Settings {
 	 */
 	public static function capability( $context = 'settings' ) {
 		/**
-		 * Filters the capability required to manage the plugin.
+		 * Filters the capability required to reach a WP-PluginsUsed screen.
 		 *
 		 * @since 2.0.0
 		 *
