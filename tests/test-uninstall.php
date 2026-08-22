@@ -44,8 +44,8 @@ class WP_PluginsUsed_Uninstall_Test extends WP_PluginsUsed_TestCase {
 	}
 
 	public function test_it_refuses_to_run_outside_the_uninstall_context() {
-		$this->assertMatchesRegularExpression(
-			"/if\s*\(\s*!\s*defined\(\s*'WP_UNINSTALL_PLUGIN'\s*\)\s*\)/",
+		$this->assertStringContainsString(
+			"defined( 'WP_UNINSTALL_PLUGIN' ) || exit;",
 			$this->code(),
 			'uninstall.php refuses to run outside the uninstall context.'
 		);

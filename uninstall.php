@@ -8,9 +8,7 @@
  * @package WP-PluginsUsed
  */
 
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit();
-}
+defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 /**
  * Delete the plugin's options for the current site.
