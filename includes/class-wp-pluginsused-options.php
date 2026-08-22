@@ -88,7 +88,7 @@ class WP_PluginsUsed_Options {
 	 *
 	 * @return array The 'plugin' and 'db' markers, each an empty string when unset.
 	 */
-	public static function get_versions() {
+	public static function markers() {
 		$stored = get_option( self::VERSION, array() );
 
 		if ( ! is_array( $stored ) ) {
@@ -114,7 +114,7 @@ class WP_PluginsUsed_Options {
 	 * @return void
 	 */
 	public static function maybe_upgrade() {
-		$versions = self::get_versions();
+		$versions = self::markers();
 
 		if ( WP_PLUGINSUSED_VERSION === $versions['plugin'] && WP_PLUGINSUSED_DB_VERSION === $versions['db'] ) {
 			return;

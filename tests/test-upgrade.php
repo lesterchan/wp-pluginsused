@@ -95,7 +95,7 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 	 *
 	 * Activation hooks do not fire when a plugin is updated, so a site that
 	 * updates through the Plugins screen reaches the migration through admin_init
-	 * -- and register_settings() is hooked to admin_init first, so by then
+	 * -- and register() is hooked to admin_init first, so by then
 	 * register_setting()'s `default` has installed a default_option filter and a
 	 * bare get_option() answers with the defaults array rather than false. The
 	 * "there is no current row yet" branch was therefore never taken, while the
@@ -115,7 +115,7 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 			)
 		);
 
-		WP_PluginsUsed_Settings::register_settings();
+		WP_PluginsUsed_Settings::register();
 		WP_PluginsUsed_Options::maybe_upgrade();
 
 		$stored = get_option( 'wp_pluginsused_options', false );
@@ -140,7 +140,7 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 				'plugin' => '',
 				'db'     => '',
 			),
-			WP_PluginsUsed_Options::get_versions(),
+			WP_PluginsUsed_Options::markers(),
 			'A missing row must not be mistaken for a version.'
 		);
 	}
@@ -153,7 +153,7 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 				'plugin' => '',
 				'db'     => '',
 			),
-			WP_PluginsUsed_Options::get_versions(),
+			WP_PluginsUsed_Options::markers(),
 			'A corrupt version row reads as empty markers rather than propagating.'
 		);
 	}

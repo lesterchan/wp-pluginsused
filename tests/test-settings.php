@@ -26,7 +26,7 @@ class WP_PluginsUsed_Settings_Test extends WP_PluginsUsed_TestCase {
 		 */
 		WP_PluginsUsed_Settings::init();
 		WP_PluginsUsed_Settings::add_page();
-		WP_PluginsUsed_Settings::register_settings();
+		WP_PluginsUsed_Settings::register();
 	}
 
 	public function test_page_is_registered_under_settings() {

@@ -94,7 +94,7 @@ class WP_PluginsUsed_Multisite_Test extends WP_PluginsUsed_TestCase {
 
 			$this->assertSame(
 				WP_PLUGINSUSED_VERSION,
-				WP_PluginsUsed_Options::get_versions()['plugin'],
+				WP_PluginsUsed_Options::markers()['plugin'],
 				"Site {$site_id} was never stamped with the running version."
 			);
 
