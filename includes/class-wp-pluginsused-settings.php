@@ -17,13 +17,6 @@ defined( 'ABSPATH' ) || exit;
 class WP_PluginsUsed_Settings {
 
 	/**
-	 * Settings page slug.
-	 *
-	 * @var string
-	 */
-	const PAGE = 'wp-pluginsused';
-
-	/**
 	 * Settings group passed to register_setting()/settings_fields().
 	 *
 	 * The group and the row it saves share one name, so there is one string to
@@ -32,6 +25,13 @@ class WP_PluginsUsed_Settings {
 	 * @var string
 	 */
 	const GROUP = 'wp_pluginsused_options';
+
+	/**
+	 * Settings page slug.
+	 *
+	 * @var string
+	 */
+	const PAGE = 'wp-pluginsused';
 
 	/**
 	 * The capability a settings screen requires.
