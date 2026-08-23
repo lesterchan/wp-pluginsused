@@ -50,8 +50,8 @@ if ( is_multisite() ) {
 	);
 
 	foreach ( $wp_pluginsused_site_ids as $wp_pluginsused_site_id ) {
-		// switch_to_blog() pushes onto a stack, so the restore belongs inside
-		// the loop -- restoring once at the end leaves the stack unwound by one.
+		// Inside the loop: switch_to_blog() pushes onto a stack, so restoring once
+		// after the loop unwinds it by exactly one.
 		switch_to_blog( (int) $wp_pluginsused_site_id );
 
 		wp_pluginsused_uninstall_site();
