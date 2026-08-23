@@ -93,9 +93,9 @@ class WP_PluginsUsed_Upgrade_Test extends WP_PluginsUsed_TestCase {
 	/**
 	 * The same fold, with the setting registered first.
 	 *
-	 * register_setting() is passed a `default`, which installs a
-	 * default_option filter -- so once it has run, a bare get_option() answers
-	 * with the defaults array rather than false. While the upgrade hung off
+	 * The `default` register_setting() is passed installs a default_option
+	 * filter -- so once it has run, a bare get_option() answers with the
+	 * defaults array rather than false. While the upgrade hung off
 	 * admin_init, after register(), that was the path every real update took:
 	 * the "there is no current row yet" branch was never taken, while the
 	 * delete a few lines below ran regardless -- the hidden-plugins list was
