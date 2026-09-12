@@ -16,7 +16,7 @@ if ( ! function_exists( 'display_pluginsused' ) ) {
 	 * @param string $type    'stats', 'active', or 'inactive'. Any other value
 	 *                        renders the inactive listing.
 	 * @param bool   $display Echo the markup instead of returning it.
-	 * @return string|void Markup, or nothing when $display is true.
+	 * @return ($display is true ? void : string) Markup, or nothing when $display is true.
 	 */
 	function display_pluginsused( $type, $display = false ) {
 		$out = WP_PluginsUsed_Template::render( $type );
